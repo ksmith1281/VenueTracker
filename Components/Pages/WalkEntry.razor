@@ -1,0 +1,105 @@
+@page "/walk-entry"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+
+<h3>Walk Entry</h3>
+
+<EditForm Model="@newEntry" OnValidSubmit="@HandleValidSubmit" FormName="WalkEntryForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="showDate" class="form-label">Show Date</label>
+        <InputDate id="showDate" class="form-control" @bind-Value="newEntry.ShowDate" />
+    </div>
+    <div class="mb-3">
+        <label for="venueName" class="form-label">Venue Name</label>
+        <InputText id="venueName" class="form-control" @bind-Value="newEntry.VenueName" />
+        <ValidationMessage For="@(() => newEntry.VenueName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="walkAmount" class="form-label">Walk Amount</label>
+        <InputNumber id="walkAmount" class="form-control" @bind-Value="newEntry.WalkAmount" />
+        <ValidationMessage For="@(() => newEntry.WalkAmount)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <InputTextArea id="notes" class="form-control" @bind-Value="newEntry.Notes" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Entry</button>
+</EditForm>
+
+<hr />
+
+<h4>Submitted Entries</h4>
+
+@if (entries.Count == 0)
+{
+    <p>No entries yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Show Date</th>
+                <th>Venue</th>
+                <th>Walk Amount</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in entries)
+            {
+                <tr>
+                    <td>@entry.ShowDate.ToShortDateString()</td>
+                    <td>@entry.VenueName</td>
+                    <td>@entry.WalkAmount?.ToString("C")</td>
+                    <td>@entry.Notes</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WalkEntryModel newEntry = new()
+    {
+        ShowDate = DateTime.Today
+    };
+
+    private List<WalkEntryModel> entries = new();
+
+    private void HandleValidSubmit()
+    {
+        entries.Add(new WalkEntryModel
+        {
+            ShowDate = newEntry.ShowDate,
+            VenueName = newEntry.VenueName,
+            WalkAmount = newEntry.WalkAmount,
+            Notes = newEntry.Notes
+        });
+
+        newEntry = new WalkEntryModel
+        {
+            ShowDate = DateTime.Today
+        };
+    }
+
+    public class WalkEntryModel
+    {
+        public DateTime ShowDate { get; set; } = DateTime.Today;
+
+        [Required(ErrorMessage = "Venue name is required.")]
+        public string? VenueName { get; set; }
+
+        [Required(ErrorMessage = "Walk amount is required.")]
+        [Range(0.01, 1000000, ErrorMessage = "Walk amount must be greater than zero.")]
+        public decimal? WalkAmount { get; set; }
+
+        public string? Notes { get; set; }
+    }
+}
