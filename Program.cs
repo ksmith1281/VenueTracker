@@ -1,10 +1,15 @@
 using VenueTracker.Components;
+using Microsoft.EntityFrameworkCore;
+using VenueTracker.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=VenueTracker.db"));
 
 var app = builder.Build();
 
