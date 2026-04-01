@@ -1,0 +1,106 @@
+@page "/venues"
+@rendermode InteractiveServer
+@using VenueTracker.Models
+
+<h3>Venues</h3>
+
+<EditForm Model="@newVenue" OnValidSubmit="@HandleValidSubmit" FormName="VenueForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="venueName" class="form-label">Venue Name</label>
+        <InputText id="venueName" class="form-control" @bind-Value="newVenue.VenueName" />
+        <ValidationMessage For="@(() => newVenue.VenueName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="city" class="form-label">City</label>
+        <InputText id="city" class="form-control" @bind-Value="newVenue.City" />
+        <ValidationMessage For="@(() => newVenue.City)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="state" class="form-label">State</label>
+        <InputText id="state" class="form-control" @bind-Value="newVenue.State" />
+        <ValidationMessage For="@(() => newVenue.State)" />
+    </div>
+
+    <div class="form-check mb-3">
+        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="newVenue.IsActive" />
+        <label for="isActive" class="form-check-label">Active</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Venue</button>
+</EditForm>
+
+<hr />
+
+<h4>Venue List</h4>
+
+@if (venues.Count == 0)
+{
+    <p>No venues added yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>VenueId</th>
+                <th>VenueName</th>
+                <th>City</th>
+                <th>State</th>
+                <th>IsActive</th>
+                <th>CreatedOn</th>
+                <th>UpdatedOn</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var venue in venues)
+            {
+                <tr>
+                    <td>@venue.VenueId</td>
+                    <td>@venue.VenueName</td>
+                    <td>@venue.City</td>
+                    <td>@venue.State</td>
+                    <td>@venue.IsActive</td>
+                    <td>@venue.CreatedOn</td>
+                    <td>@venue.UpdatedOn</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Venue newVenue = new()
+    {
+        IsActive = true
+    };
+
+    private List<Venue> venues = new();
+
+    private int nextVenueId = 1;
+
+    private void HandleValidSubmit()
+    {
+        var venueToAdd = new Venue
+        {
+            VenueId = nextVenueId++,
+            VenueName = newVenue.VenueName,
+            City = newVenue.City,
+            State = newVenue.State,
+            IsActive = newVenue.IsActive,
+            CreatedOn = DateTime.Now,
+            UpdatedOn = DateTime.Now
+        };
+
+        venues.Add(venueToAdd);
+
+        newVenue = new Venue
+        {
+            IsActive = true
+        };
+    }
+}
