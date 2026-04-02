@@ -1,39 +1,47 @@
 @page "/venues"
-@inject AppDbContext Db
 @rendermode InteractiveServer
+
 @using VenueTracker.Data
 @using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
 
 <h3>Venues</h3>
 
-<EditForm Model="@newVenue" OnValidSubmit="@HandleValidSubmit" FormName="VenueForm">
+<EditForm Model="@currentVenue" OnValidSubmit="@HandleValidSubmit" FormName="VenueForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="mb-3">
         <label for="venueName" class="form-label">Venue Name</label>
-        <InputText id="venueName" class="form-control" @bind-Value="newVenue.VenueName" />
-        <ValidationMessage For="@(() => newVenue.VenueName)" />
+        <InputText id="venueName" class="form-control" @bind-Value="currentVenue.VenueName" />
+        <ValidationMessage For="@(() => currentVenue.VenueName)" />
     </div>
 
     <div class="mb-3">
         <label for="city" class="form-label">City</label>
-        <InputText id="city" class="form-control" @bind-Value="newVenue.City" />
-        <ValidationMessage For="@(() => newVenue.City)" />
+        <InputText id="city" class="form-control" @bind-Value="currentVenue.City" />
+        <ValidationMessage For="@(() => currentVenue.City)" />
     </div>
 
     <div class="mb-3">
         <label for="state" class="form-label">State</label>
-        <InputText id="state" class="form-control" @bind-Value="newVenue.State" />
-        <ValidationMessage For="@(() => newVenue.State)" />
+        <InputText id="state" class="form-control" @bind-Value="currentVenue.State" />
+        <ValidationMessage For="@(() => currentVenue.State)" />
     </div>
 
     <div class="form-check mb-3">
-        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="newVenue.IsActive" />
+        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="currentVenue.IsActive" />
         <label for="isActive" class="form-check-label">Active</label>
     </div>
 
-    <button type="submit" class="btn btn-primary">Add Venue</button>
+    <button type="submit" class="btn btn-primary">
+        @(isEditMode ? "Save Changes" : "Add Venue")
+    </button>
+
+    <button type="button" class="btn btn-secondary ms-2" @onclick="ResetForm">
+        Cancel
+    </button>
 </EditForm>
 
 <hr />
@@ -56,6 +64,7 @@ else
                 <th>IsActive</th>
                 <th>CreatedOn</th>
                 <th>UpdatedOn</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -69,6 +78,11 @@ else
                     <td>@venue.IsActive</td>
                     <td>@venue.CreatedOn</td>
                     <td>@venue.UpdatedOn</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => EditVenue(venue)">
+                            Edit
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -76,33 +90,84 @@ else
 }
 
 @code {
-    private Venue newVenue = new()
-    {
-        IsActive = true
-    };
+    private Venue currentVenue = new() { IsActive = true };
 
     private List<Venue> venues = new();
 
-    private int nextVenueId = 1;
+    private bool isEditMode = false;
+
+    protected override void OnInitialized()
+    {
+        LoadVenues();
+    }
+
+    private void LoadVenues()
+    {
+        venues = Db.Venues
+            .OrderBy(v => v.VenueName)
+            .ToList();
+    }
 
     private void HandleValidSubmit()
     {
-        var venueToAdd = new Venue
+        if (isEditMode)
         {
-            VenueId = nextVenueId++,
-            VenueName = newVenue.VenueName,
-            City = newVenue.City,
-            State = newVenue.State,
-            IsActive = newVenue.IsActive,
-            CreatedOn = DateTime.Now,
-            UpdatedOn = DateTime.Now
+            var venueToUpdate = Db.Venues.FirstOrDefault(v => v.VenueId == currentVenue.VenueId);
+
+            if (venueToUpdate is not null)
+            {
+                venueToUpdate.VenueName = currentVenue.VenueName;
+                venueToUpdate.City = currentVenue.City;
+                venueToUpdate.State = currentVenue.State;
+                venueToUpdate.IsActive = currentVenue.IsActive;
+                venueToUpdate.UpdatedOn = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+        }
+        else
+        {
+            var venueToAdd = new Venue
+            {
+                VenueName = currentVenue.VenueName,
+                City = currentVenue.City,
+                State = currentVenue.State,
+                IsActive = currentVenue.IsActive,
+                CreatedOn = DateTime.Now,
+                UpdatedOn = DateTime.Now
+            };
+
+            Db.Venues.Add(venueToAdd);
+            Db.SaveChanges();
+        }
+
+        LoadVenues();
+        ResetForm();
+    }
+
+    private void EditVenue(Venue venue)
+    {
+        currentVenue = new Venue
+        {
+            VenueId = venue.VenueId,
+            VenueName = venue.VenueName,
+            City = venue.City,
+            State = venue.State,
+            IsActive = venue.IsActive,
+            CreatedOn = venue.CreatedOn,
+            UpdatedOn = venue.UpdatedOn
         };
 
-        venues.Add(venueToAdd);
+        isEditMode = true;
+    }
 
-        newVenue = new Venue
+    private void ResetForm()
+    {
+        currentVenue = new Venue
         {
             IsActive = true
         };
+
+        isEditMode = false;
     }
 }
