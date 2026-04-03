@@ -14,14 +14,24 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="venues">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Venues
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="shows">
-                <span class="bi bi-music-note-list" aria-hidden="true"></span> Shows
-            </NavLink>
+            <span class="nav-link fw-bold">Admin</span>
+            <nav class="flex-column ms-3">
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="admin/venues">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Venues
+                    </NavLink>
+                </div>
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="admin/shows">
+                        <span class="bi bi-music-note-list" aria-hidden="true"></span> Shows
+                    </NavLink>
+                </div>
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="admin/walks">
+                        <span class="bi bi-walk" aria-hidden="true"></span> Walks
+                    </NavLink>
+                </div>
+            </nav>
         </div>
     </nav>
 </div>

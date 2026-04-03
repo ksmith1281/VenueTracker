@@ -1,4 +1,4 @@
-@page "/shows"
+@page "/admin/shows"
 @rendermode InteractiveServer
 
 @using VenueTracker.Data
@@ -35,11 +35,6 @@
         <InputText id="showName" class="form-control" @bind-Value="currentShow.ShowName" />
     </div>
 
-    <div class="mb-3">
-        <label for="tourName" class="form-label">Tour Name</label>
-        <InputText id="tourName" class="form-control" @bind-Value="currentShow.TourName" />
-    </div>
-
     <button type="submit" class="btn btn-primary">@(isEditMode ? "Save Show" : "Add Show")</button>
     <button type="button" class="btn btn-secondary ms-2" @onclick="ResetForm">Cancel</button>
 </EditForm>
@@ -58,10 +53,9 @@ else
         <thead>
             <tr>
                 <th>ShowId</th>
-                <th>Venue</th>
+                <th>VenueId</th>
                 <th>ShowDate</th>
                 <th>ShowName</th>
-                <th>TourName</th>
                 <th>CreatedOn</th>
                 <th>UpdatedOn</th>
                 <th>Actions</th>
@@ -72,10 +66,9 @@ else
             {
                 <tr>
                     <td>@show.ShowId</td>
-                    <td>@show.Venue?.VenueName</td>
+                    <td>@show.VenueId</td>
                     <td>@show.ShowDate.ToShortDateString()</td>
                     <td>@show.ShowName</td>
-                    <td>@show.TourName</td>
                     <td>@show.CreatedOn</td>
                     <td>@show.UpdatedOn</td>
                     <td>
@@ -127,7 +120,6 @@ else
                 showFromDb.VenueId = currentShow.VenueId;
                 showFromDb.ShowDate = currentShow.ShowDate;
                 showFromDb.ShowName = currentShow.ShowName;
-                showFromDb.TourName = currentShow.TourName;
                 showFromDb.UpdatedOn = DateTime.Now;
 
                 Db.SaveChanges();
@@ -140,7 +132,6 @@ else
                 VenueId = currentShow.VenueId,
                 ShowDate = currentShow.ShowDate,
                 ShowName = currentShow.ShowName,
-                TourName = currentShow.TourName,
                 CreatedOn = DateTime.Now,
                 UpdatedOn = DateTime.Now
             };
@@ -161,7 +152,6 @@ else
             VenueId = show.VenueId,
             ShowDate = show.ShowDate,
             ShowName = show.ShowName,
-            TourName = show.TourName,
             CreatedOn = show.CreatedOn,
             UpdatedOn = show.UpdatedOn
         };

@@ -1,7 +1,90 @@
 ﻿@page "/"
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
 
 <PageTitle>Home</PageTitle>
 
-<h1>Welcome to VenueTracker!</h1>
+<h1>VenueTracker Admin Dashboard</h1>
 
-<p>Manage your venues database with ease. Navigate to the Venues page to add, edit, and view your venues.</p>
+<p>Go to the navigation menu to access admin pages for venues and shows.</p>
+
+<hr />
+
+<h2>Upcoming Shows</h2>
+@if (upcomingShows.Count == 0)
+{
+    <p>No upcoming shows found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ShowId</th>
+                <th>Venue</th>
+                <th>Venue City</th>
+                <th>Venue State</th>
+                <th>ShowDate</th>
+                <th>ShowName</th>
+                <th>Venue Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in upcomingShows)
+            {
+                <tr>
+                    <td>@row.ShowId</td>
+                    <td>@row.VenueName</td>
+                    <td>@row.VenueCity</td>
+                    <td>@row.VenueState</td>
+                    <td>@row.ShowDate.ToShortDateString()</td>
+                    <td>@row.ShowName</td>
+                    <td>@row.VenueIsActive</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<UpcomingShowView> upcomingShows = new();
+
+    protected override void OnInitialized()
+    {
+        LoadUpcomingShows();
+    }
+
+    private void LoadUpcomingShows()
+    {
+        upcomingShows = Db.Shows
+            .Include(s => s.Venue)
+            .Where(s => s.ShowDate >= DateTime.Today)
+            .OrderBy(s => s.ShowDate)
+            .Select(s => new UpcomingShowView
+            {
+                ShowId = s.ShowId,
+                VenueId = s.VenueId,
+                VenueName = s.Venue!.VenueName,
+                VenueCity = s.Venue.City,
+                VenueState = s.Venue.State,
+                VenueIsActive = s.Venue.IsActive,
+                ShowDate = s.ShowDate,
+                ShowName = s.ShowName
+            })
+            .ToList();
+    }
+
+    private class UpcomingShowView
+    {
+        public int ShowId { get; set; }
+        public int VenueId { get; set; }
+        public string? VenueName { get; set; }
+        public string? VenueCity { get; set; }
+        public string? VenueState { get; set; }
+        public bool VenueIsActive { get; set; }
+        public DateTime ShowDate { get; set; }
+        public string? ShowName { get; set; }
+    }
+}

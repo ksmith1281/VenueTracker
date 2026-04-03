@@ -20,9 +20,6 @@ namespace VenueTracker.Models
         [StringLength(200, ErrorMessage = "Show name cannot exceed 200 characters.")]
         public string? ShowName { get; set; }
 
-        [StringLength(200, ErrorMessage = "Tour name cannot exceed 200 characters.")]
-        public string? TourName { get; set; }
-
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public DateTime UpdatedOn { get; set; } = DateTime.Now;

@@ -1,4 +1,4 @@
-@page "/venues"
+@page "/admin/venues"
 @rendermode InteractiveServer
 
 @using VenueTracker.Data
@@ -28,12 +28,6 @@
         <label for="state" class="form-label">State</label>
         <InputText id="state" class="form-control" @bind-Value="currentVenue.State" />
         <ValidationMessage For="@(() => currentVenue.State)" />
-    </div>
-
-    <div class="mb-3">
-        <label for="country" class="form-label">Country</label>
-        <InputText id="country" class="form-control" @bind-Value="currentVenue.Country" />
-        <ValidationMessage For="@(() => currentVenue.Country)" />
     </div>
 
     <div class="form-check mb-3">
@@ -160,7 +154,6 @@ else
             VenueName = venue.VenueName,
             City = venue.City,
             State = venue.State,
-            Country = venue.Country,
             IsActive = venue.IsActive,
             CreatedOn = venue.CreatedOn,
             UpdatedOn = venue.UpdatedOn
