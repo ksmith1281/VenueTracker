@@ -18,8 +18,12 @@ namespace VenueTracker.Models
         [StringLength(2, MinimumLength = 2, ErrorMessage = "Use 2-letter state abbreviation.")]
         public string? State { get; set; }
 
+        [StringLength(100, ErrorMessage = "Country cannot exceed 100 characters.")]
+        public string? Country { get; set; }
+
         public bool IsActive { get; set; } = true;
 
+        public ICollection<Show>? Shows { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public DateTime UpdatedOn { get; set; } = DateTime.Now;

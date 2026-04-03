@@ -1,6 +1,10 @@
 @page "/walk-entry"
 @rendermode InteractiveServer
-@using System.ComponentModel.DataAnnotations
+
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
 
 <h3>Walk Entry</h3>
 
@@ -66,40 +70,44 @@ else
 }
 
 @code {
-    private WalkEntryModel newEntry = new()
+    private WalkEntry newEntry = new()
     {
         ShowDate = DateTime.Today
     };
 
-    private List<WalkEntryModel> entries = new();
+    private List<WalkEntry> entries = new();
+
+    protected override void OnInitialized()
+    {
+        LoadEntries();
+    }
+
+    private void LoadEntries()
+    {
+        entries = Db.WalkEntries
+            .OrderByDescending(e => e.ShowDate)
+            .ToList();
+    }
 
     private void HandleValidSubmit()
     {
-        entries.Add(new WalkEntryModel
+        var entryToAdd = new WalkEntry
         {
             ShowDate = newEntry.ShowDate,
             VenueName = newEntry.VenueName,
             WalkAmount = newEntry.WalkAmount,
-            Notes = newEntry.Notes
-        });
+            Notes = newEntry.Notes,
+            CreatedOn = DateTime.Now
+        };
 
-        newEntry = new WalkEntryModel
+        Db.WalkEntries.Add(entryToAdd);
+        Db.SaveChanges();
+
+        LoadEntries();
+
+        newEntry = new WalkEntry
         {
             ShowDate = DateTime.Today
         };
-    }
-
-    public class WalkEntryModel
-    {
-        public DateTime ShowDate { get; set; } = DateTime.Today;
-
-        [Required(ErrorMessage = "Venue name is required.")]
-        public string? VenueName { get; set; }
-
-        [Required(ErrorMessage = "Walk amount is required.")]
-        [Range(0.01, 1000000, ErrorMessage = "Walk amount must be greater than zero.")]
-        public decimal? WalkAmount { get; set; }
-
-        public string? Notes { get; set; }
     }
 }

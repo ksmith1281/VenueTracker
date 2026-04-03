@@ -30,6 +30,12 @@
         <ValidationMessage For="@(() => currentVenue.State)" />
     </div>
 
+    <div class="mb-3">
+        <label for="country" class="form-label">Country</label>
+        <InputText id="country" class="form-control" @bind-Value="currentVenue.Country" />
+        <ValidationMessage For="@(() => currentVenue.Country)" />
+    </div>
+
     <div class="form-check mb-3">
         <InputCheckbox id="isActive" class="form-check-input" @bind-Value="currentVenue.IsActive" />
         <label for="isActive" class="form-check-label">Active</label>
@@ -79,9 +85,10 @@ else
                     <td>@venue.CreatedOn</td>
                     <td>@venue.UpdatedOn</td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => EditVenue(venue)">
-                            Edit
-                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary me-1"
+                                @onclick="() => EditVenue(venue)">Edit</button>
+                        <button type="button" class="btn btn-sm btn-danger"
+                                @onclick="() => DeleteVenue(venue.VenueId)">Delete</button>
                     </td>
                 </tr>
             }
@@ -153,12 +160,25 @@ else
             VenueName = venue.VenueName,
             City = venue.City,
             State = venue.State,
+            Country = venue.Country,
             IsActive = venue.IsActive,
             CreatedOn = venue.CreatedOn,
             UpdatedOn = venue.UpdatedOn
         };
 
         isEditMode = true;
+    }
+
+    private void DeleteVenue(int venueId)
+    {
+        var venue = Db.Venues.FirstOrDefault(v => v.VenueId == venueId);
+        if (venue != null)
+        {
+            Db.Venues.Remove(venue);
+            Db.SaveChanges();
+            LoadVenues();
+            ResetForm();
+        }
     }
 
     private void ResetForm()

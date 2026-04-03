@@ -1,0 +1,189 @@
+@page "/shows"
+@rendermode InteractiveServer
+
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+
+<h3>Shows</h3>
+
+<EditForm Model="@currentShow" OnValidSubmit="@HandleValidSubmit" FormName="ShowForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="venue" class="form-label">Venue</label>
+        <select id="venue" class="form-select" @bind="currentShow.VenueId">
+            <option value="0">Select venue</option>
+            @foreach (var venue in venues)
+            {
+                <option value="@venue.VenueId">@venue.VenueName (@venue.City, @venue.State)</option>
+            }
+        </select>
+        <ValidationMessage For="@(() => currentShow.VenueId)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="showDate" class="form-label">Show Date</label>
+        <InputDate id="showDate" class="form-control" @bind-Value="currentShow.ShowDate" />
+        <ValidationMessage For="@(() => currentShow.ShowDate)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="showName" class="form-label">Show Name</label>
+        <InputText id="showName" class="form-control" @bind-Value="currentShow.ShowName" />
+    </div>
+
+    <div class="mb-3">
+        <label for="tourName" class="form-label">Tour Name</label>
+        <InputText id="tourName" class="form-control" @bind-Value="currentShow.TourName" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">@(isEditMode ? "Save Show" : "Add Show")</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="ResetForm">Cancel</button>
+</EditForm>
+
+<hr />
+
+<h4>Show List</h4>
+
+@if (shows.Count == 0)
+{
+    <p>No shows available.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ShowId</th>
+                <th>Venue</th>
+                <th>ShowDate</th>
+                <th>ShowName</th>
+                <th>TourName</th>
+                <th>CreatedOn</th>
+                <th>UpdatedOn</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var show in shows)
+            {
+                <tr>
+                    <td>@show.ShowId</td>
+                    <td>@show.Venue?.VenueName</td>
+                    <td>@show.ShowDate.ToShortDateString()</td>
+                    <td>@show.ShowName</td>
+                    <td>@show.TourName</td>
+                    <td>@show.CreatedOn</td>
+                    <td>@show.UpdatedOn</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => EditShow(show)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteShow(show.ShowId)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Show currentShow = new() { ShowDate = DateTime.Today };
+    private List<Show> shows = new();
+    private List<Venue> venues = new();
+    private bool isEditMode = false;
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        venues = Db.Venues
+            .Where(v => v.IsActive)
+            .OrderBy(v => v.VenueName)
+            .ToList();
+
+        shows = Db.Shows
+            .Include(s => s.Venue)
+            .OrderByDescending(s => s.ShowDate)
+            .ToList();
+    }
+
+    private void HandleValidSubmit()
+    {
+        if (currentShow.VenueId <= 0)
+        {
+            return; // invalid selection
+        }
+
+        if (isEditMode)
+        {
+            var showFromDb = Db.Shows.FirstOrDefault(s => s.ShowId == currentShow.ShowId);
+            if (showFromDb != null)
+            {
+                showFromDb.VenueId = currentShow.VenueId;
+                showFromDb.ShowDate = currentShow.ShowDate;
+                showFromDb.ShowName = currentShow.ShowName;
+                showFromDb.TourName = currentShow.TourName;
+                showFromDb.UpdatedOn = DateTime.Now;
+
+                Db.SaveChanges();
+            }
+        }
+        else
+        {
+            var newShow = new Show
+            {
+                VenueId = currentShow.VenueId,
+                ShowDate = currentShow.ShowDate,
+                ShowName = currentShow.ShowName,
+                TourName = currentShow.TourName,
+                CreatedOn = DateTime.Now,
+                UpdatedOn = DateTime.Now
+            };
+
+            Db.Shows.Add(newShow);
+            Db.SaveChanges();
+        }
+
+        LoadData();
+        ResetForm();
+    }
+
+    private void EditShow(Show show)
+    {
+        currentShow = new Show
+        {
+            ShowId = show.ShowId,
+            VenueId = show.VenueId,
+            ShowDate = show.ShowDate,
+            ShowName = show.ShowName,
+            TourName = show.TourName,
+            CreatedOn = show.CreatedOn,
+            UpdatedOn = show.UpdatedOn
+        };
+
+        isEditMode = true;
+    }
+
+    private void DeleteShow(int showId)
+    {
+        var show = Db.Shows.FirstOrDefault(s => s.ShowId == showId);
+        if (show != null)
+        {
+            Db.Shows.Remove(show);
+            Db.SaveChanges();
+            LoadData();
+            ResetForm();
+        }
+    }
+
+    private void ResetForm()
+    {
+        currentShow = new Show { ShowDate = DateTime.Today };
+        isEditMode = false;
+    }
+}
