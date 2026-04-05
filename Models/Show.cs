@@ -20,6 +20,11 @@ namespace VenueTracker.Models
         [StringLength(200, ErrorMessage = "Show name cannot exceed 200 characters.")]
         public string? ShowName { get; set; }
 
+        [StringLength(50, ErrorMessage = "Status cannot exceed 50 characters.")]
+        public string? Status { get; set; }
+
+        public string? Deal { get; set; }
+
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public DateTime UpdatedOn { get; set; } = DateTime.Now;

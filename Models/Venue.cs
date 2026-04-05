@@ -18,6 +18,8 @@ namespace VenueTracker.Models
         [StringLength(2, MinimumLength = 2, ErrorMessage = "Use 2-letter state abbreviation.")]
         public string? State { get; set; }
 
+        public int? Capacity { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public ICollection<Show>? Shows { get; set; }

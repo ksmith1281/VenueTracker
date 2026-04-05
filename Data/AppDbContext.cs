@@ -8,6 +8,8 @@ namespace VenueTracker.Data
         public DbSet<Venue> Venues { get; set; }
         public DbSet<Show> Shows { get; set; }
         public DbSet<Walk> Walks { get; set; }
+        public DbSet<Buyer> Buyers { get; set; }
+        public DbSet<Subcontractor> Subcontractors { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -44,6 +46,26 @@ namespace VenueTracker.Data
                       .WithMany()
                       .HasForeignKey(w => w.ShowId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Buyer>(entity =>
+            {
+                entity.HasKey(b => b.BuyerId);
+                entity.Property(b => b.FirstName).IsRequired().HasMaxLength(100);
+                entity.Property(b => b.LastName).IsRequired().HasMaxLength(100);
+                entity.Property(b => b.Email).HasMaxLength(200);
+                entity.Property(b => b.Phone).HasMaxLength(20);
+                entity.Property(b => b.Cell).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<Subcontractor>(entity =>
+            {
+                entity.HasKey(s => s.SubcontractorId);
+                entity.Property(s => s.Name).IsRequired().HasMaxLength(200);
+                entity.Property(s => s.Role).HasMaxLength(100);
+                entity.Property(s => s.Email).HasMaxLength(200);
+                entity.Property(s => s.Phone).HasMaxLength(20);
+                entity.Property(s => s.Notes).HasMaxLength(500);
             });
 
             base.OnModelCreating(modelBuilder);
