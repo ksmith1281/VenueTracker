@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VenueTracker.Data;
 
@@ -10,14 +11,16 @@ using VenueTracker.Data;
 namespace VenueTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406001528_AddStatusTableAndUpdateShow")]
+    partial class AddStatusTableAndUpdateShow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
 
-            modelBuilder.Entity("VenueTracker.Models.tBuyer", b =>
+            modelBuilder.Entity("VenueTracker.Models.Buyer", b =>
                 {
                     b.Property<int>("BuyerId")
                         .ValueGeneratedOnAdd()
@@ -56,10 +59,10 @@ namespace VenueTracker.Migrations
 
                     b.HasKey("BuyerId");
 
-                    b.ToTable("tBuyer");
+                    b.ToTable("Buyers");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tShow", b =>
+            modelBuilder.Entity("VenueTracker.Models.Show", b =>
                 {
                     b.Property<int>("ShowId")
                         .ValueGeneratedOnAdd()
@@ -105,10 +108,10 @@ namespace VenueTracker.Migrations
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("tShow");
+                    b.ToTable("Shows");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tStatus", b =>
+            modelBuilder.Entity("VenueTracker.Models.Status", b =>
                 {
                     b.Property<int>("StatusId")
                         .ValueGeneratedOnAdd()
@@ -121,10 +124,10 @@ namespace VenueTracker.Migrations
 
                     b.HasKey("StatusId");
 
-                    b.ToTable("tStatus");
+                    b.ToTable("Statuses");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tSubcontractor", b =>
+            modelBuilder.Entity("VenueTracker.Models.Subcontractor", b =>
                 {
                     b.Property<int>("SubcontractorId")
                         .ValueGeneratedOnAdd()
@@ -165,10 +168,10 @@ namespace VenueTracker.Migrations
 
                     b.HasKey("SubcontractorId");
 
-                    b.ToTable("tSubcontractor");
+                    b.ToTable("Subcontractors");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tVenue", b =>
+            modelBuilder.Entity("VenueTracker.Models.Venue", b =>
                 {
                     b.Property<int>("VenueId")
                         .ValueGeneratedOnAdd()
@@ -203,36 +206,36 @@ namespace VenueTracker.Migrations
 
                     b.HasKey("VenueId");
 
-                    b.ToTable("tVenue");
+                    b.ToTable("Venues");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tShow", b =>
+            modelBuilder.Entity("VenueTracker.Models.Show", b =>
                 {
-                    b.HasOne("VenueTracker.Models.tStatus", "tStatus")
-                        .WithMany("tShows")
+                    b.HasOne("VenueTracker.Models.Status", "Status")
+                        .WithMany("Shows")
                         .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("VenueTracker.Models.tVenue", "tVenue")
-                        .WithMany("tShows")
+                    b.HasOne("VenueTracker.Models.Venue", "Venue")
+                        .WithMany("Shows")
                         .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("tStatus");
+                    b.Navigation("Status");
 
-                    b.Navigation("tVenue");
+                    b.Navigation("Venue");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tStatus", b =>
+            modelBuilder.Entity("VenueTracker.Models.Status", b =>
                 {
-                    b.Navigation("tShows");
+                    b.Navigation("Shows");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tVenue", b =>
+            modelBuilder.Entity("VenueTracker.Models.Venue", b =>
                 {
-                    b.Navigation("tShows");
+                    b.Navigation("Shows");
                 });
 #pragma warning restore 612, 618
         }

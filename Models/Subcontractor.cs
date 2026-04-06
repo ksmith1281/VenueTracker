@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VenueTracker.Models
 {
-    public class Subcontractor
+    [Table("tSubcontractor")]
+    public class tSubcontractor
     {
         public int SubcontractorId { get; set; }
 

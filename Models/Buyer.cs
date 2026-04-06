@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VenueTracker.Models
 {
-    public class Buyer
+    [Table("tBuyer")]
+    public class tBuyer
     {
         public int BuyerId { get; set; }
 

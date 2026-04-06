@@ -31,8 +31,30 @@
     </div>
 
     <div class="mb-3">
-        <label for="showName" class="form-label">Show Name</label>
-        <InputText id="showName" class="form-control" @bind-Value="currentShow.ShowName" />
+        <label for="status" class="form-label">Status</label>
+        <select id="status" class="form-select" @bind="currentShow.StatusId">
+            <option value="0">Select status</option>
+            @foreach (var status in statuses)
+            {
+                <option value="@status.StatusId">@status.StatusName</option>
+            }
+        </select>
+        <ValidationMessage For="@(() => currentShow.StatusId)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="walkAmount" class="form-label">Walk Amount</label>
+        <InputNumber id="walkAmount" class="form-control" @bind-Value="currentShow.WalkAmount" />
+    </div>
+
+    <div class="mb-3">
+        <label for="merchAmount" class="form-label">Merch Amount</label>
+        <InputNumber id="merchAmount" class="form-control" @bind-Value="currentShow.MerchAmount" />
+    </div>
+
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <InputTextArea id="notes" class="form-control" @bind-Value="currentShow.Notes" />
     </div>
 
     <button type="submit" class="btn btn-primary">@(isEditMode ? "Save Show" : "Add Show")</button>
@@ -56,6 +78,10 @@ else
                 <th>VenueId</th>
                 <th>ShowDate</th>
                 <th>ShowName</th>
+                <th>Status</th>
+                <th>WalkAmount</th>
+                <th>MerchAmount</th>
+                <th>Notes</th>
                 <th>CreatedOn</th>
                 <th>UpdatedOn</th>
                 <th>Actions</th>
@@ -69,6 +95,10 @@ else
                     <td>@show.VenueId</td>
                     <td>@show.ShowDate.ToShortDateString()</td>
                     <td>@show.ShowName</td>
+                    <td>@show.tStatus?.StatusName</td>
+                    <td>@show.WalkAmount</td>
+                    <td>@show.MerchAmount</td>
+                    <td>@show.Notes</td>
                     <td>@show.CreatedOn</td>
                     <td>@show.UpdatedOn</td>
                     <td>
@@ -82,9 +112,10 @@ else
 }
 
 @code {
-    private Show currentShow = new() { ShowDate = DateTime.Today };
-    private List<Show> shows = new();
-    private List<Venue> venues = new();
+    private tShow currentShow = new() { ShowDate = DateTime.Today };
+    private List<tShow> shows = new();
+    private List<tVenue> venues = new();
+    private List<tStatus> statuses = new();
     private bool isEditMode = false;
 
     protected override void OnInitialized()
@@ -94,32 +125,41 @@ else
 
     private void LoadData()
     {
-        venues = Db.Venues
+        venues = Db.tVenues
             .Where(v => v.IsActive)
             .OrderBy(v => v.VenueName)
             .ToList();
 
-        shows = Db.Shows
-            .Include(s => s.Venue)
+        statuses = Db.tStatuses
+            .OrderBy(s => s.StatusName)
+            .ToList();
+
+        shows = Db.tShows
+            .Include(s => s.tVenue)
+            .Include(s => s.tStatus)
             .OrderByDescending(s => s.ShowDate)
             .ToList();
     }
 
     private void HandleValidSubmit()
     {
-        if (currentShow.VenueId <= 0)
+        if (currentShow.VenueId <= 0 || currentShow.StatusId <= 0)
         {
             return; // invalid selection
         }
 
         if (isEditMode)
         {
-            var showFromDb = Db.Shows.FirstOrDefault(s => s.ShowId == currentShow.ShowId);
+            var showFromDb = Db.tShows.FirstOrDefault(s => s.ShowId == currentShow.ShowId);
             if (showFromDb != null)
             {
                 showFromDb.VenueId = currentShow.VenueId;
                 showFromDb.ShowDate = currentShow.ShowDate;
                 showFromDb.ShowName = currentShow.ShowName;
+                showFromDb.StatusId = currentShow.StatusId;
+                showFromDb.WalkAmount = currentShow.WalkAmount;
+                showFromDb.MerchAmount = currentShow.MerchAmount;
+                showFromDb.Notes = currentShow.Notes;
                 showFromDb.UpdatedOn = DateTime.Now;
 
                 Db.SaveChanges();
@@ -127,16 +167,20 @@ else
         }
         else
         {
-            var newShow = new Show
+            var newShow = new tShow
             {
                 VenueId = currentShow.VenueId,
                 ShowDate = currentShow.ShowDate,
                 ShowName = currentShow.ShowName,
+                StatusId = currentShow.StatusId,
+                WalkAmount = currentShow.WalkAmount,
+                MerchAmount = currentShow.MerchAmount,
+                Notes = currentShow.Notes,
                 CreatedOn = DateTime.Now,
                 UpdatedOn = DateTime.Now
             };
 
-            Db.Shows.Add(newShow);
+            Db.tShows.Add(newShow);
             Db.SaveChanges();
         }
 
@@ -144,14 +188,18 @@ else
         ResetForm();
     }
 
-    private void EditShow(Show show)
+    private void EditShow(tShow show)
     {
-        currentShow = new Show
+        currentShow = new tShow
         {
             ShowId = show.ShowId,
             VenueId = show.VenueId,
             ShowDate = show.ShowDate,
             ShowName = show.ShowName,
+            StatusId = show.StatusId,
+            WalkAmount = show.WalkAmount,
+            MerchAmount = show.MerchAmount,
+            Notes = show.Notes,
             CreatedOn = show.CreatedOn,
             UpdatedOn = show.UpdatedOn
         };
@@ -161,10 +209,10 @@ else
 
     private void DeleteShow(int showId)
     {
-        var show = Db.Shows.FirstOrDefault(s => s.ShowId == showId);
+        var show = Db.tShows.FirstOrDefault(s => s.ShowId == showId);
         if (show != null)
         {
-            Db.Shows.Remove(show);
+            Db.tShows.Remove(show);
             Db.SaveChanges();
             LoadData();
             ResetForm();
@@ -173,7 +221,7 @@ else
 
     private void ResetForm()
     {
-        currentShow = new Show { ShowDate = DateTime.Today };
+        currentShow = new tShow { ShowDate = DateTime.Today };
         isEditMode = false;
     }
 }

@@ -12,7 +12,7 @@ namespace VenueTracker.Models
         [ForeignKey("Show")]
         public int ShowId { get; set; }
 
-        public Show? Show { get; set; }
+        public tShow? Show { get; set; }
 
         [Required]
         public decimal WalkAmount { get; set; }

@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VenueTracker.Models
 {
-    public class Venue
+    [Table("tVenue")]
+    public class tVenue
     {
+        [Key]
         public int VenueId { get; set; }
 
         [Required(ErrorMessage = "Venue name is required.")]
@@ -22,7 +25,7 @@ namespace VenueTracker.Models
 
         public bool IsActive { get; set; } = true;
 
-        public ICollection<Show>? Shows { get; set; }
+        public ICollection<tShow>? tShows { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public DateTime UpdatedOn { get; set; } = DateTime.Now;

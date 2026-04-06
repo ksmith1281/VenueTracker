@@ -1,0 +1,92 @@
+@page "/add-show"
+@rendermode InteractiveServer
+
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Add New Show</PageTitle>
+
+<h3>Add New Show</h3>
+
+<EditForm Model="@newShow" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="venue" class="form-label">Venue</label>
+        <select id="venue" class="form-select" @bind="newShow.VenueId">
+            <option value="0">Select venue</option>
+            @foreach (var venue in venues)
+            {
+                <option value="@venue.VenueId">@venue.VenueName (@venue.City, @venue.State)</option>
+            }
+        </select>
+        <ValidationMessage For="@(() => newShow.VenueId)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="showDate" class="form-label">Show Date</label>
+        <InputDate id="showDate" class="form-control" @bind-Value="newShow.ShowDate" />
+        <ValidationMessage For="@(() => newShow.ShowDate)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="deal" class="form-label">Deal</label>
+        <InputText id="deal" class="form-control" @bind-Value="newShow.Deal" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Show</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private tShow newShow = new() { ShowDate = DateTime.Today };
+    private List<tVenue> venues = new();
+
+    protected override void OnInitialized()
+    {
+        LoadVenues();
+    }
+
+    private void LoadVenues()
+    {
+        venues = Db.tVenues
+            .Where(v => v.IsActive)
+            .OrderBy(v => v.VenueName)
+            .ToList();
+    }
+
+    private void HandleValidSubmit()
+    {
+        if (newShow.VenueId <= 0)
+        {
+            return;
+        }
+
+        var pendingStatus = Db.tStatuses.FirstOrDefault(s => s.StatusName == "Pending");
+        if (pendingStatus == null)
+        {
+            // Fallback if not seeded
+            pendingStatus = new tStatus { StatusName = "Pending" };
+            Db.tStatuses.Add(pendingStatus);
+            Db.SaveChanges();
+        }
+
+        newShow.StatusId = pendingStatus.StatusId;
+        newShow.CreatedOn = DateTime.Now;
+        newShow.UpdatedOn = DateTime.Now;
+
+        Db.tShows.Add(newShow);
+        Db.SaveChanges();
+
+        Navigation.NavigateTo("/");
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

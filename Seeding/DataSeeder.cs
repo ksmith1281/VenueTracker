@@ -1,5 +1,6 @@
 using VenueTracker.Data;
 using VenueTracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace VenueTracker.Seeding
 {
@@ -29,6 +30,26 @@ namespace VenueTracker.Seeding
 
             Console.WriteLine($"Processing {records.Count} records from CSV...");
 
+            // Seed statuses
+            var statuses = new[] { "Pending", "Confirmed", "Rejected", "Cancelled" };
+            foreach (var statusName in statuses)
+            {
+                if (!_context.tStatuses.Any(s => s.StatusName == statusName))
+                {
+                    _context.tStatuses.Add(new tStatus { StatusName = statusName });
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            // Delete shows with status "travel"
+            var travelShows = _context.tShows.Include(s => s.tStatus).Where(s => s.tStatus != null && s.tStatus.StatusName == "travel").ToList();
+            if (travelShows.Any())
+            {
+                _context.tShows.RemoveRange(travelShows);
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"Deleted {travelShows.Count} shows with status 'travel'");
+            }
+
             // Extract unique venues
             var uniqueVenues = records
                 .GroupBy(r => new { r.VenueEvent, r.City, r.State })
@@ -41,7 +62,7 @@ namespace VenueTracker.Seeding
                 if (string.IsNullOrWhiteSpace(venueData.VenueEvent) || string.IsNullOrWhiteSpace(venueData.State))
                     continue;
 
-                var existingVenue = _context.Venues.FirstOrDefault(v =>
+                var existingVenue = _context.tVenues.FirstOrDefault(v =>
                     v.VenueName == venueData.VenueEvent &&
                     v.City == venueData.City &&
                     v.State == venueData.State);
@@ -49,7 +70,7 @@ namespace VenueTracker.Seeding
                 if (existingVenue == null)
                 {
                     var capacity = CsvImporter.ParseInt(venueData.Capacity);
-                    var venue = new Venue
+                    var venue = new tVenue
                     {
                         VenueName = venueData.VenueEvent,
                         City = venueData.City ?? "Unknown",
@@ -59,7 +80,7 @@ namespace VenueTracker.Seeding
                         CreatedOn = DateTime.Now,
                         UpdatedOn = DateTime.Now
                     };
-                    _context.Venues.Add(venue);
+                    _context.tVenues.Add(venue);
                     Console.WriteLine($"Added venue: {venue.VenueName}");
                 }
             }
@@ -79,13 +100,13 @@ namespace VenueTracker.Seeding
                 if (string.IsNullOrWhiteSpace(buyerData.BuyersFirstName) && string.IsNullOrWhiteSpace(buyerData.BuyersLastName))
                     continue;
 
-                var existingBuyer = _context.Buyers.FirstOrDefault(b =>
+                var existingBuyer = _context.tBuyers.FirstOrDefault(b =>
                     b.FirstName == buyerData.BuyersFirstName &&
                     b.LastName == buyerData.BuyersLastName);
 
                 if (existingBuyer == null)
                 {
-                    var buyer = new Buyer
+                    var buyer = new tBuyer
                     {
                         FirstName = buyerData.BuyersFirstName ?? "Unknown",
                         LastName = buyerData.BuyersLastName ?? "Unknown",
@@ -96,7 +117,7 @@ namespace VenueTracker.Seeding
                         CreatedOn = DateTime.Now,
                         UpdatedOn = DateTime.Now
                     };
-                    _context.Buyers.Add(buyer);
+                    _context.tBuyers.Add(buyer);
                     Console.WriteLine($"Added buyer: {buyer.FirstName} {buyer.LastName}");
                 }
             }
@@ -140,12 +161,12 @@ namespace VenueTracker.Seeding
                 if (string.IsNullOrWhiteSpace(subData.Name))
                     continue;
 
-                var existingSubcontractor = _context.Subcontractors.FirstOrDefault(s =>
+                var existingSubcontractor = _context.tSubcontractors.FirstOrDefault(s =>
                     s.Name == subData.Name && s.Role == subData.Role);
 
                 if (existingSubcontractor == null)
                 {
-                    var subcontractor = new Subcontractor
+                    var subcontractor = new tSubcontractor
                     {
                         Name = subData.Name,
                         Role = subData.Role,
@@ -155,7 +176,7 @@ namespace VenueTracker.Seeding
                         CreatedOn = DateTime.Now,
                         UpdatedOn = DateTime.Now
                     };
-                    _context.Subcontractors.Add(subcontractor);
+                    _context.tSubcontractors.Add(subcontractor);
                     Console.WriteLine($"Added subcontractor: {subcontractor.Name} ({subcontractor.Role})");
                 }
             }
@@ -169,7 +190,7 @@ namespace VenueTracker.Seeding
                 if (showDate == null || string.IsNullOrWhiteSpace(record.VenueEvent))
                     continue;
 
-                var venue = _context.Venues.FirstOrDefault(v =>
+                var venue = _context.tVenues.FirstOrDefault(v =>
                     v.VenueName == record.VenueEvent &&
                     v.City == record.City &&
                     v.State == record.State);
@@ -177,70 +198,60 @@ namespace VenueTracker.Seeding
                 if (venue == null)
                     continue;
 
-                var existingShow = _context.Shows.FirstOrDefault(s =>
+                var existingShow = _context.tShows.FirstOrDefault(s =>
                     s.VenueId == venue.VenueId && s.ShowDate == showDate);
+
+                var walkAmount = CsvImporter.ParseDecimal(record.Walk);
+                var merchAmount = CsvImporter.ParseDecimal(record.Merch);
+                var notes = record.ShowNotes;
+
+                var statusName = record.Status ?? "Pending";
+                var status = _context.tStatuses.FirstOrDefault(s => s.StatusName == statusName);
+                if (status == null)
+                {
+                    status = _context.tStatuses.FirstOrDefault(s => s.StatusName == "Pending");
+                    if (status == null)
+                    {
+                        throw new InvalidOperationException("Pending status not found");
+                    }
+                }
 
                 if (existingShow == null)
                 {
-                    var show = new Show
+                    var show = new tShow
                     {
                         VenueId = venue.VenueId,
                         ShowDate = showDate.Value,
                         ShowName = $"{record.VenueEvent} - {showDate:MM/dd/yy}",
-                        Status = record.Status ?? "Pending",
+                        StatusId = status.StatusId,
                         Deal = record.Deal,
+                        WalkAmount = walkAmount,
+                        MerchAmount = merchAmount > 0 ? merchAmount : null,
+                        Notes = notes,
                         CreatedOn = DateTime.Now,
                         UpdatedOn = DateTime.Now
                     };
-                    _context.Shows.Add(show);
+                    _context.tShows.Add(show);
                     Console.WriteLine($"Added show: {show.ShowName}");
                 }
-            }
-
-            await _context.SaveChangesAsync();
-
-            // Seed walks
-            foreach (var record in records)
-            {
-                var showDate = CsvImporter.ParseShowDate(record.DateOfShow);
-                if (showDate == null || string.IsNullOrWhiteSpace(record.VenueEvent))
-                    continue;
-
-                var venue = _context.Venues.FirstOrDefault(v =>
-                    v.VenueName == record.VenueEvent &&
-                    v.City == record.City &&
-                    v.State == record.State);
-
-                if (venue == null)
-                    continue;
-
-                var show = _context.Shows.FirstOrDefault(s =>
-                    s.VenueId == venue.VenueId && s.ShowDate == showDate);
-
-                if (show == null)
-                    continue;
-
-                var walkAmount = CsvImporter.ParseDecimal(record.Walk);
-                var merchAmount = CsvImporter.ParseDecimal(record.Merch);
-
-                if (walkAmount > 0 || merchAmount > 0)
+                else
                 {
-                    var existingWalk = _context.Walks.FirstOrDefault(w => w.ShowId == show.ShowId);
-
-                    if (existingWalk == null)
+                    if (walkAmount > 0)
                     {
-                        var walk = new Walk
-                        {
-                            ShowId = show.ShowId,
-                            WalkAmount = walkAmount,
-                            MerchAmount = merchAmount > 0 ? merchAmount : null,
-                            Notes = record.ShowNotes,
-                            CreatedOn = DateTime.Now,
-                            UpdatedOn = DateTime.Now
-                        };
-                        _context.Walks.Add(walk);
-                        Console.WriteLine($"Added walk for show: {show.ShowName}");
+                        existingShow.WalkAmount = walkAmount;
                     }
+
+                    if (merchAmount > 0)
+                    {
+                        existingShow.MerchAmount = merchAmount;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(notes))
+                    {
+                        existingShow.Notes = notes;
+                    }
+
+                    existingShow.UpdatedOn = DateTime.Now;
                 }
             }
 

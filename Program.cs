@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
             await context.Database.MigrateAsync();
 
             // Only seed if tables are empty
-            if (!context.Venues.Any())
+            if (!context.tVenues.Any())
             {
                 var csvPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Venue Buyer Database .csv");
                 Console.WriteLine($"Looking for CSV at: {csvPath}");

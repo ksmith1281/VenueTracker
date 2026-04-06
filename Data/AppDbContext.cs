@@ -5,11 +5,11 @@ namespace VenueTracker.Data
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Venue> Venues { get; set; }
-        public DbSet<Show> Shows { get; set; }
-        public DbSet<Walk> Walks { get; set; }
-        public DbSet<Buyer> Buyers { get; set; }
-        public DbSet<Subcontractor> Subcontractors { get; set; }
+        public DbSet<tVenue> tVenues { get; set; }
+        public DbSet<tShow> tShows { get; set; }
+        public DbSet<tBuyer> tBuyers { get; set; }
+        public DbSet<tSubcontractor> tSubcontractors { get; set; }
+        public DbSet<tStatus> tStatuses { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -18,7 +18,7 @@ namespace VenueTracker.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Venue>(entity =>
+            modelBuilder.Entity<tVenue>(entity =>
             {
                 entity.HasKey(v => v.VenueId);
                 entity.Property(v => v.VenueName).IsRequired().HasMaxLength(200);
@@ -26,29 +26,30 @@ namespace VenueTracker.Data
                 entity.Property(v => v.State).IsRequired().HasMaxLength(2);
             });
 
-            modelBuilder.Entity<Show>(entity =>
+            modelBuilder.Entity<tShow>(entity =>
             {
                 entity.HasKey(s => s.ShowId);
                 entity.Property(s => s.ShowDate).IsRequired();
-                entity.HasOne(s => s.Venue)
-                      .WithMany(v => v.Shows)
+                entity.Property(s => s.WalkAmount).HasDefaultValue(0m);
+                entity.Property(s => s.MerchAmount);
+                entity.Property(s => s.Notes).HasMaxLength(1000);
+                entity.HasOne(s => s.tVenue)
+                      .WithMany(v => v.tShows)
                       .HasForeignKey(s => s.VenueId)
                       .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(s => s.tStatus)
+                      .WithMany(st => st.tShows)
+                      .HasForeignKey(s => s.StatusId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
-            modelBuilder.Entity<Walk>(entity =>
+            modelBuilder.Entity<tStatus>(entity =>
             {
-                entity.HasKey(w => w.WalkId);
-                entity.Property(w => w.WalkAmount).IsRequired();
-                entity.Property(w => w.MerchAmount);
-                entity.Property(w => w.Notes);
-                entity.HasOne(w => w.Show)
-                      .WithMany()
-                      .HasForeignKey(w => w.ShowId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasKey(st => st.StatusId);
+                entity.Property(st => st.StatusName).IsRequired().HasMaxLength(50);
             });
 
-            modelBuilder.Entity<Buyer>(entity =>
+            modelBuilder.Entity<tBuyer>(entity =>
             {
                 entity.HasKey(b => b.BuyerId);
                 entity.Property(b => b.FirstName).IsRequired().HasMaxLength(100);
@@ -58,7 +59,7 @@ namespace VenueTracker.Data
                 entity.Property(b => b.Cell).HasMaxLength(20);
             });
 
-            modelBuilder.Entity<Subcontractor>(entity =>
+            modelBuilder.Entity<tSubcontractor>(entity =>
             {
                 entity.HasKey(s => s.SubcontractorId);
                 entity.Property(s => s.Name).IsRequired().HasMaxLength(200);
