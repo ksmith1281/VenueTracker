@@ -1,0 +1,146 @@
+@page "/edit-show/{showId:int}"
+@rendermode InteractiveServer
+
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Show</PageTitle>
+
+<h1>Edit Show</h1>
+
+@if (show == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="@show" OnValidSubmit="@HandleValidSubmit" FormName="EditShowForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="venue" class="form-label">Venue</label>
+                <select id="venue" class="form-select" @bind="show.VenueId">
+                    <option value="0">Select venue</option>
+                    @foreach (var venue in venues)
+                    {
+                        <option value="@venue.VenueId">@venue.VenueName (@venue.City, @venue.State)</option>
+                    }
+                </select>
+                <ValidationMessage For="@(() => show.VenueId)" />
+            </div>
+            <div class="col-md-6">
+                <label for="status" class="form-label">Status</label>
+                <select id="status" class="form-select" @bind="show.StatusId">
+                    <option value="0">Select status</option>
+                    @foreach (var status in statuses)
+                    {
+                        <option value="@status.StatusId">@status.StatusName</option>
+                    }
+                </select>
+                <ValidationMessage For="@(() => show.StatusId)" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="showDate" class="form-label">Show Date</label>
+                <InputDate id="showDate" class="form-control" @bind-Value="show.ShowDate" />
+                <ValidationMessage For="@(() => show.ShowDate)" />
+            </div>
+            <div class="col-md-6">
+                <label for="showName" class="form-label">Show Name</label>
+                <InputText id="showName" class="form-control" @bind-Value="show.ShowName" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="walkAmount" class="form-label">Walk Amount</label>
+                <InputNumber id="walkAmount" class="form-control" @bind-Value="show.WalkAmount" />
+            </div>
+            <div class="col-md-6">
+                <label for="merchAmount" class="form-label">Merch Amount</label>
+                <InputNumber id="merchAmount" class="form-control" @bind-Value="show.MerchAmount" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="deal" class="form-label">Deal</label>
+            <InputText id="deal" class="form-control" @bind-Value="show.Deal" />
+        </div>
+
+        <div class="mb-3">
+            <label for="notes" class="form-label">Notes</label>
+            <InputTextArea id="notes" class="form-control" @bind-Value="show.Notes" rows="3" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-danger" @onclick="DeleteShow">Delete Show</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int ShowId { get; set; }
+
+    private tShow? show;
+    private List<tVenue> venues = new();
+    private List<tStatus> statuses = new();
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        venues = Db.tVenues
+            .Where(v => v.IsActive)
+            .OrderBy(v => v.VenueName)
+            .ToList();
+
+        statuses = Db.tStatuses
+            .OrderBy(s => s.StatusName)
+            .ToList();
+
+        show = Db.tShows
+            .Include(s => s.tVenue)
+            .Include(s => s.tStatus)
+            .FirstOrDefault(s => s.ShowId == ShowId);
+    }
+
+    private void HandleValidSubmit()
+    {
+        if (show == null || show.VenueId <= 0 || show.StatusId <= 0)
+        {
+            return;
+        }
+
+        show.UpdatedOn = DateTime.Now;
+        Db.SaveChanges();
+        Navigation.NavigateTo("/");
+    }
+
+    private void DeleteShow()
+    {
+        if (show != null)
+        {
+            Db.tShows.Remove(show);
+            Db.SaveChanges();
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

@@ -1,0 +1,120 @@
+@page "/search-shows"
+@rendermode InteractiveServer
+
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Search Shows</PageTitle>
+
+<h1>Search Shows</h1>
+
+<div class="mb-3">
+    <label for="search" class="form-label">Search Shows</label>
+    <InputText id="search" class="form-control" @bind-Value="searchTerm" @bind-Value:after="PerformSearch"
+               placeholder="Enter show name, venue, or date (MM/dd/yyyy)" />
+</div>
+
+@if (searchResults.Count > 0)
+{
+    <h3>Search Results (@searchResults.Count)</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Show Date</th>
+                <th>Venue</th>
+                <th>Show Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var show in searchResults)
+            {
+                <tr>
+                    <td>@show.ShowDate.ToShortDateString()</td>
+                    <td>@show.VenueName</td>
+                    <td>@show.ShowName</td>
+                    <td>@show.StatusName</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditShow(show.ShowId)">Edit</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (!string.IsNullOrWhiteSpace(searchTerm))
+{
+    <p>No shows found matching "@searchTerm".</p>
+}
+
+@code {
+    private string searchTerm = "";
+    private List<SearchResult> searchResults = new();
+
+    private void PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            searchResults.Clear();
+            return;
+        }
+
+        // Try to parse as date first
+        if (DateTime.TryParse(searchTerm, out var searchDate))
+        {
+            searchResults = Db.tShows
+                .Include(s => s.tVenue)
+                .Include(s => s.tStatus)
+                .Where(s => s.ShowDate.Date == searchDate.Date)
+                .OrderBy(s => s.ShowDate)
+                .Select(s => new SearchResult
+                {
+                    ShowId = s.ShowId,
+                    ShowDate = s.ShowDate,
+                    ShowName = s.ShowName,
+                    VenueName = s.tVenue!.VenueName,
+                    StatusName = s.tStatus!.StatusName
+                })
+                .ToList();
+        }
+        else
+        {
+            // Search by show name or venue name
+            searchResults = Db.tShows
+                .Include(s => s.tVenue)
+                .Include(s => s.tStatus)
+                .Where(s =>
+                    (s.ShowName != null && s.ShowName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                    (s.tVenue != null && s.tVenue.VenueName != null && s.tVenue.VenueName.Contains(searchTerm,
+StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(s => s.ShowDate)
+                .Select(s => new SearchResult
+                {
+                    ShowId = s.ShowId,
+                    ShowDate = s.ShowDate,
+                    ShowName = s.ShowName,
+                    VenueName = s.tVenue!.VenueName,
+                    StatusName = s.tStatus!.StatusName
+                })
+                .ToList();
+        }
+    }
+
+    private void EditShow(int showId)
+    {
+        Navigation.NavigateTo($"/edit-show/{showId}");
+    }
+
+    private class SearchResult
+    {
+        public int ShowId { get; set; }
+        public DateTime ShowDate { get; set; }
+        public string? ShowName { get; set; }
+        public string? VenueName { get; set; }
+        public string? StatusName { get; set; }
+    }
+}

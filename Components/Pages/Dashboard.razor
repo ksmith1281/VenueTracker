@@ -1,0 +1,97 @@
+﻿@page "/"
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+<p>Shows for @DateTime.Now.Year</p>
+
+@if (currentYearShows.Count == 0)
+{
+    <p>No shows found for @DateTime.Now.Year.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Show Date</th>
+                <th>Status</th>
+                <th>Show Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var show in currentYearShows)
+            {
+                <tr>
+                    <td>@show.ShowDate.ToShortDateString()</td>
+                    <td>@show.StatusName</td>
+                    <td>@show.ShowName</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-2" @onclick="() => EditShow(show.ShowId)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteShow(show.ShowId)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ShowView> currentYearShows = new();
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        var currentYear = DateTime.Now.Year;
+        var startOfYear = new DateTime(currentYear, 1, 1);
+        var endOfYear = new DateTime(currentYear, 12, 31);
+
+        currentYearShows = Db.tShows
+            .Include(s => s.tVenue)
+            .Include(s => s.tStatus)
+            .Where(s => s.ShowDate >= startOfYear && s.ShowDate <= endOfYear)
+            .OrderBy(s => s.ShowDate)
+            .Select(s => new ShowView
+            {
+                ShowId = s.ShowId,
+                ShowDate = s.ShowDate,
+                ShowName = s.ShowName,
+                StatusName = s.tStatus!.StatusName
+            })
+            .ToList();
+    }
+
+    private void EditShow(int showId)
+    {
+        Navigation.NavigateTo($"/edit-show/{showId}");
+    }
+
+    private async Task DeleteShow(int showId)
+    {
+        var show = Db.tShows.FirstOrDefault(s => s.ShowId == showId);
+        if (show != null)
+        {
+            Db.tShows.Remove(show);
+            await Db.SaveChangesAsync();
+            LoadData();
+        }
+    }
+
+    private class ShowView
+    {
+        public int ShowId { get; set; }
+        public DateTime ShowDate { get; set; }
+        public string? ShowName { get; set; }
+        public string? StatusName { get; set; }
+    }
+}
