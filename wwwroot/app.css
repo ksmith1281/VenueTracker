@@ -1,8 +1,10 @@
-html, body {
+html,
+body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-a, .btn-link {
+a,
+.btn-link {
     color: #006bb7;
 }
 
@@ -12,8 +14,12 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -42,10 +48,96 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+.page {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    min-width: 250px;
+    transition: width 0.2s ease, min-width 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-closed .sidebar {
+    width: 0;
+    min-width: 0;
+    transform: translateX(-100%);
+    overflow: hidden;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: white;
+    border-bottom: 1px solid #e1e1e1;
+    padding: 0.75rem 1rem;
+    gap: 1rem;
+}
+
+.menu-button {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+}
+
+.search-wrapper {
+    flex: 0 1 840px;
+    width: 100%;
+}
+
+.show-search-bar {
+    width: 100%;
+}
+
+.show-search-bar .form-control {
+    width: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 15;
+        background: white;
+    }
+
+    .sidebar-closed .sidebar {
+        transform: translateX(-100%);
+        width: 250px;
+        min-width: 250px;
+    }
+
+    .page {
+        flex-direction: column;
+    }
+
+    main {
+        margin-left: 0;
+    }
 }

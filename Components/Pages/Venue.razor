@@ -1,0 +1,304 @@
+@page "/venues"
+@page "/venues/{venueId:int}"
+@rendermode InteractiveServer
+
+@using VenueTracker.Data
+@using VenueTracker.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue.VenueId == 0 ? "Add Venue" : "Edit Venue")</PageTitle>
+
+<h3>@(venue.VenueId == 0 ? "Add Venue" : "Edit Venue")</h3>
+
+<EditForm Model="@venue" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="venueName" class="form-label">Venue Name</label>
+        <InputText id="venueName" class="form-control" @bind-Value="venue.VenueName" />
+        <ValidationMessage For="@(() => venue.VenueName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="city" class="form-label">City</label>
+        <InputText id="city" class="form-control" @bind-Value="venue.City" />
+        <ValidationMessage For="@(() => venue.City)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="state" class="form-label">State</label>
+        <InputText id="state" class="form-control" @bind-Value="venue.State" />
+        <ValidationMessage For="@(() => venue.State)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="capacity" class="form-label">Capacity</label>
+        <InputNumber id="capacity" class="form-control" @bind-Value="venue.Capacity" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="venue.IsActive" />
+        <label for="isActive" class="form-check-label">Is Active</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">@(venue.VenueId == 0 ? "Add Venue" : "Update Venue")</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@if (venue.VenueId > 0)
+{
+    <h4 class="mt-4">Buyers</h4>
+
+    @if (buyers.Count == 0)
+    {
+        <p>No buyers associated with this venue.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Cell</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var buyer in buyers)
+                {
+                    <tr>
+                        <td>@buyer.FirstName @buyer.LastName</td>
+                        <td>@buyer.Email</td>
+                        <td>@buyer.Phone</td>
+                        <td>@buyer.Cell</td>
+                        <td>@(buyer.IsActive ? "Yes" : "No")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h5>Assign Existing Buyer</h5>
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <select id="buyerSelect" class="form-select" @bind="selectedBuyerId">
+                <option value="0">Select buyer</option>
+                @foreach (var buyer in availableBuyers)
+                {
+                    <option value="@buyer.BuyerId">@buyer.FirstName @buyer.LastName (@buyer.Email)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="button" class="btn btn-secondary" @onclick="AssignBuyer">Assign Buyer</button>
+        </div>
+    </div>
+
+    <h5>Add New Buyer</h5>
+    <EditForm Model="@newBuyer" OnValidSubmit="@HandleAddBuyer">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="firstName" class="form-label">First Name</label>
+                <InputText id="firstName" class="form-control" @bind-Value="newBuyer.FirstName" />
+                <ValidationMessage For="@(() => newBuyer.FirstName)" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="lastName" class="form-label">Last Name</label>
+                <InputText id="lastName" class="form-control" @bind-Value="newBuyer.LastName" />
+                <ValidationMessage For="@(() => newBuyer.LastName)" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="newBuyer.Email" />
+            <ValidationMessage For="@(() => newBuyer.Email)" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="phone" class="form-label">Phone</label>
+                <InputText id="phone" class="form-control" @bind-Value="newBuyer.Phone" />
+                <ValidationMessage For="@(() => newBuyer.Phone)" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="cell" class="form-label">Cell</label>
+                <InputText id="cell" class="form-control" @bind-Value="newBuyer.Cell" />
+                <ValidationMessage For="@(() => newBuyer.Cell)" />
+            </div>
+        </div>
+
+        <div class="mb-3 form-check">
+            <InputCheckbox id="buyerIsActive" class="form-check-input" @bind-Value="newBuyer.IsActive" />
+            <label for="buyerIsActive" class="form-check-label">Is Active</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Buyer</button>
+    </EditForm>
+}
+
+<h4 class="mt-4">Latest Added Venues</h4>
+
+@if (recentVenues.Count == 0)
+{
+    <p>No venues found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Venue Name</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Capacity</th>
+                <th>Active</th>
+                <th>Added On</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in recentVenues)
+            {
+                <tr @onclick="() => EditVenue(v.VenueId)" style="cursor: pointer;">
+                    <td>@v.VenueName</td>
+                    <td>@v.City</td>
+                    <td>@v.State</td>
+                    <td>@v.Capacity</td>
+                    <td>@(v.IsActive ? "Yes" : "No")</td>
+                    <td>@v.CreatedOn.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int? VenueId { get; set; }
+
+    private tVenue venue = new() { IsActive = true };
+    private List<tBuyer> buyers = new();
+    private List<tBuyer> availableBuyers = new();
+    private tBuyer newBuyer = new() { IsActive = true };
+    private int selectedBuyerId = 0;
+    private List<tVenue> recentVenues = new();
+
+    protected override void OnInitialized()
+    {
+        if (VenueId.HasValue)
+        {
+            LoadVenue(VenueId.Value);
+            LoadBuyers();
+        }
+        LoadAvailableBuyers();
+        LoadRecentVenues();
+    }
+
+    private void LoadVenue(int id)
+    {
+        venue = Db.tVenues.Find(id) ?? new tVenue { IsActive = true };
+    }
+
+    private void LoadBuyers()
+    {
+        if (venue.VenueId > 0)
+        {
+            buyers = Db.tBuyers
+                .Where(b => b.VenueId == venue.VenueId)
+                .OrderBy(b => b.LastName)
+                .ThenBy(b => b.FirstName)
+                .ToList();
+        }
+    }
+
+    private void LoadAvailableBuyers()
+    {
+        availableBuyers = Db.tBuyers
+            .Where(b => b.VenueId == null)
+            .OrderBy(b => b.LastName)
+            .ThenBy(b => b.FirstName)
+            .ToList();
+    }
+
+    private void LoadRecentVenues()
+    {
+        recentVenues = Db.tVenues
+            .OrderByDescending(v => v.CreatedOn)
+            .Take(10)
+            .ToList();
+    }
+
+    private void HandleValidSubmit()
+    {
+        if (venue.VenueId == 0)
+        {
+            venue.CreatedOn = DateTime.Now;
+            Db.tVenues.Add(venue);
+        }
+        venue.UpdatedOn = DateTime.Now;
+        Db.SaveChanges();
+
+        if (VenueId == null)
+        {
+            // After adding, navigate to edit mode
+            Navigation.NavigateTo($"/venues/{venue.VenueId}");
+        }
+        else
+        {
+            LoadBuyers();
+            LoadAvailableBuyers();
+            LoadRecentVenues();
+            StateHasChanged();
+        }
+    }
+
+    private void HandleAddBuyer()
+    {
+        newBuyer.VenueId = venue.VenueId;
+        newBuyer.CreatedOn = DateTime.Now;
+        newBuyer.UpdatedOn = DateTime.Now;
+        Db.tBuyers.Add(newBuyer);
+        Db.SaveChanges();
+
+        newBuyer = new tBuyer { IsActive = true };
+        LoadBuyers();
+        LoadAvailableBuyers();
+        StateHasChanged();
+    }
+
+    private void AssignBuyer()
+    {
+        if (selectedBuyerId > 0)
+        {
+            var buyer = Db.tBuyers.Find(selectedBuyerId);
+            if (buyer != null)
+            {
+                buyer.VenueId = venue.VenueId;
+                buyer.UpdatedOn = DateTime.Now;
+                Db.SaveChanges();
+                LoadBuyers();
+                LoadAvailableBuyers();
+                selectedBuyerId = 0;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void EditVenue(int venueId)
+    {
+        Navigation.NavigateTo($"/venues/{venueId}");
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/venues");
+    }
+}

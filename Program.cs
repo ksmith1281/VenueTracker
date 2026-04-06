@@ -2,12 +2,15 @@ using VenueTracker.Components;
 using Microsoft.EntityFrameworkCore;
 using VenueTracker.Data;
 using VenueTracker.Seeding;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddMudServices();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=VenueTracker.db"));

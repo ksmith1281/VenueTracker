@@ -69,6 +69,10 @@ namespace VenueTracker.Data
                 entity.Property(b => b.Email).HasMaxLength(200);
                 entity.Property(b => b.Phone).HasMaxLength(20);
                 entity.Property(b => b.Cell).HasMaxLength(20);
+                entity.HasOne(b => b.tVenue)
+                      .WithMany(v => v.tBuyers)
+                      .HasForeignKey(b => b.VenueId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<tSubcontractor>(entity =>

@@ -38,17 +38,36 @@
         <InputText id="deal" class="form-control" @bind-Value="newShow.Deal" />
     </div>
 
+    <div class="mb-3">
+        <label for="showName" class="form-label">Show Name (Optional)</label>
+        <InputText id="showName" class="form-control" @bind-Value="newShow.ShowName" />
+    </div>
+
     <button type="submit" class="btn btn-primary">Add Show</button>
+    <button type="button" class="btn btn-secondary ms-2" @onclick="AddVenue">Add Venue</button>
     <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
 </EditForm>
+
+<h4 class="mt-4">Recent Shows</h4>
+<ul class="list-group">
+    @foreach (var show in recentShows)
+    {
+        <li class="list-group-item list-group-item-action" @onclick="() => NavigateToEdit(show.ShowId)">
+            @(show.ShowName ?? $"Show on {show.ShowDate.ToShortDateString()}") - @show.tVenue?.VenueName
+            (@show.tVenue?.City, @show.tVenue?.State)
+        </li>
+    }
+</ul>
 
 @code {
     private tShow newShow = new() { ShowDate = DateTime.Today };
     private List<tVenue> venues = new();
+    private List<tShow> recentShows = new();
 
     protected override void OnInitialized()
     {
         LoadVenues();
+        LoadRecentShows();
     }
 
     private void LoadVenues()
@@ -56,6 +75,15 @@
         venues = Db.tVenues
             .Where(v => v.IsActive)
             .OrderBy(v => v.VenueName)
+            .ToList();
+    }
+
+    private void LoadRecentShows()
+    {
+        recentShows = Db.tShows
+            .Include(s => s.tVenue)
+            .OrderByDescending(s => s.CreatedOn)
+            .Take(10)
             .ToList();
     }
 
@@ -82,7 +110,19 @@
         Db.tShows.Add(newShow);
         Db.SaveChanges();
 
+        LoadRecentShows();
+
         Navigation.NavigateTo("/");
+    }
+
+    private void NavigateToEdit(int showId)
+    {
+        Navigation.NavigateTo($"/edit-show/{showId}");
+    }
+
+    private void AddVenue()
+    {
+        Navigation.NavigateTo("/venues");
     }
 
     private void Cancel()

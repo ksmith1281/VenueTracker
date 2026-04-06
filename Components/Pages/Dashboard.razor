@@ -9,35 +9,37 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<h1>Dashboard</h1>
-<p>Shows for @DateTime.Now.Year</p>
+<MudCard Class="my-4">
+    <MudCardContent>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <MudText Typo="Typo.h4">Dashboard</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddShow">Add Show</MudButton>
+        </div>
 
-@if (currentYearShows.Count == 0)
-{
-    <p>No shows found for @DateTime.Now.Year.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Show Date</th>
-                <th>Status</th>
-                <th>Show Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var show in currentYearShows)
-            {
-                <tr @onclick="() => EditShow(show.ShowId)" style="cursor: pointer;">
-                    <td>@show.ShowDate.ToShortDateString()</td>
-                    <td>@show.StatusName</td>
-                    <td>@show.ShowName</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        <MudText Typo="Typo.body1" Class="mb-3">Shows for @DateTime.Now.Year</MudText>
+
+        @if (currentYearShows.Count == 0)
+        {
+            <MudText Typo="Typo.subtitle1">No shows found for @DateTime.Now.Year.</MudText>
+        }
+        else
+        {
+            <MudTable T="ShowView" Items="currentYearShows" Hover="true" Bordered="true" Striped="true" Dense="true"
+                      OnRowClick="@((TableRowClickEventArgs<ShowView> e) => { if (e.Item is not null) EditShow(e.Item.ShowId); })">
+                <HeaderContent>
+                    <MudTh>Show Date</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Show Name</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Show Date">@context.ShowDate.ToShortDateString()</MudTd>
+                    <MudTd DataLabel="Status">@context.StatusName</MudTd>
+                    <MudTd DataLabel="Show Name">@context.ShowName</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudCardContent>
+</MudCard>
 
 @code {
     private List<ShowView> currentYearShows = new();
@@ -73,6 +75,11 @@ else
         Logger.LogInformation($"EditShow called with showId: {showId}");
         Console.WriteLine($"DEBUG: EditShow called with showId: {showId}");
         Navigation.NavigateTo($"/edit-show/{showId}");
+    }
+
+    private void AddShow()
+    {
+        Navigation.NavigateTo("/add-show");
     }
 
     private class ShowView

@@ -8,6 +8,11 @@ namespace VenueTracker.Models
     {
         public int BuyerId { get; set; }
 
+        [ForeignKey("tVenue")]
+        public int? VenueId { get; set; }
+
+        public tVenue? tVenue { get; set; }
+
         [Required(ErrorMessage = "First name is required.")]
         [StringLength(100, ErrorMessage = "First name cannot exceed 100 characters.")]
         public string? FirstName { get; set; }
