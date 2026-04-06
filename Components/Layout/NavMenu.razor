@@ -1,43 +1,17 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">VenueTracker</a>
-    </div>
+﻿@using Radzen
+@using Radzen.Blazor
+
+<div class="sidebar-header">
+    <div class="app-title">VenueTracker</div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<RadzenPanelMenu Style="width: 100%; border: none;">
+    <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="/" />
+    <RadzenPanelMenuItem Text="Search Shows" Icon="search" Path="/search-shows" />
+    <RadzenPanelMenuItem Text="Add Show" Icon="add_circle" Path="/add-show" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="search-shows">
-                <span class="bi bi-search" aria-hidden="true"></span> Search Shows
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="add-show">
-                <span class="bi bi-plus-circle" aria-hidden="true"></span> Add Show
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <span class="nav-link fw-bold">Admin</span>
-            <nav class="flex-column ms-3">
-                <div class="nav-item">
-                    <NavLink class="nav-link" href="admin/venues">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Venues
-                    </NavLink>
-                </div>
-                <div class="nav-item">
-                    <NavLink class="nav-link" href="admin/shows">
-                        <span class="bi bi-music-note-list" aria-hidden="true"></span> Shows
-                    </NavLink>
-                </div>
-            </nav>
-        </div>
-    </nav>
-</div>
-
+    <RadzenPanelMenuItem Text="Admin" Icon="settings">
+        <RadzenPanelMenuItem Text="Venues" Icon="location_city" Path="/admin/venues" />
+        <RadzenPanelMenuItem Text="Shows" Icon="library_music" Path="/admin/shows" />
+    </RadzenPanelMenuItem>
+</RadzenPanelMenu>

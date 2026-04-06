@@ -3,24 +3,26 @@
 <MudThemeProvider />
 <MudSnackbarProvider />
 
-<div class="page @(sidebarOpen ? string.Empty : "sidebar-closed")">
-    <div class="sidebar">
+<RadzenLayout Style="min-height: 100vh;">
+
+    <RadzenSidebar @bind-Expanded="sidebarOpen" Responsive="false" Style="width: 250px;">
         <NavMenu />
-    </div>
+    </RadzenSidebar>
 
-    <main>
-        <div class="top-row px-4">
-            <button class="menu-button" @onclick="ToggleSidebar" aria-label="Toggle navigation">☰</button>
-            <div class="search-wrapper">
-                <ShowSearchBar />
-            </div>
+    <RadzenHeader Style="display: flex; align-items: center; gap: 1rem; padding: 0 1rem;">
+        <RadzenButton Icon="menu" ButtonStyle="ButtonStyle.Light" Click="@ToggleSidebar"
+                      aria-label="Toggle navigation" />
+
+        <div style="flex: 1;">
+            <ShowSearchBar />
         </div>
+    </RadzenHeader>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    <RadzenBody Style="padding: 1rem;">
+        @Body
+    </RadzenBody>
+
+</RadzenLayout>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
