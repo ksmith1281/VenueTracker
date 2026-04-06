@@ -10,6 +10,8 @@ namespace VenueTracker.Data
         public DbSet<tBuyer> tBuyers { get; set; }
         public DbSet<tSubcontractor> tSubcontractors { get; set; }
         public DbSet<tStatus> tStatuses { get; set; }
+        public DbSet<tPaymentType> tPaymentTypes { get; set; }
+        public DbSet<tShowSubcontractor> tShowSubcontractors { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -41,12 +43,22 @@ namespace VenueTracker.Data
                       .WithMany(st => st.tShows)
                       .HasForeignKey(s => s.StatusId)
                       .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(s => s.tPaymentType)
+                      .WithMany(pt => pt.tShows)
+                      .HasForeignKey(s => s.PaymentTypeId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<tStatus>(entity =>
             {
                 entity.HasKey(st => st.StatusId);
                 entity.Property(st => st.StatusName).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<tPaymentType>(entity =>
+            {
+                entity.HasKey(pt => pt.PaymentTypeId);
+                entity.Property(pt => pt.PaymentType).IsRequired().HasMaxLength(50);
             });
 
             modelBuilder.Entity<tBuyer>(entity =>
@@ -67,6 +79,21 @@ namespace VenueTracker.Data
                 entity.Property(s => s.Email).HasMaxLength(200);
                 entity.Property(s => s.Phone).HasMaxLength(20);
                 entity.Property(s => s.Notes).HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<tShowSubcontractor>(entity =>
+            {
+                entity.HasKey(ss => ss.ShowSubcontractorId);
+                entity.Property(ss => ss.Amount).IsRequired();
+                entity.Property(ss => ss.Notes).HasMaxLength(500);
+                entity.HasOne(ss => ss.tShow)
+                      .WithMany(s => s.tShowSubcontractors)
+                      .HasForeignKey(ss => ss.ShowId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(ss => ss.tSubcontractor)
+                      .WithMany(s => s.tShowSubcontractors)
+                      .HasForeignKey(ss => ss.SubcontractorId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             base.OnModelCreating(modelBuilder);

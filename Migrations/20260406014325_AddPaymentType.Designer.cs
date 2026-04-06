@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VenueTracker.Data;
 
@@ -10,9 +11,11 @@ using VenueTracker.Data;
 namespace VenueTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406014325_AddPaymentType")]
+    partial class AddPaymentType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -127,40 +130,6 @@ namespace VenueTracker.Migrations
                     b.HasIndex("VenueId");
 
                     b.ToTable("tShow");
-                });
-
-            modelBuilder.Entity("VenueTracker.Models.tShowSubcontractor", b =>
-                {
-                    b.Property<int>("ShowSubcontractorId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ShowId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SubcontractorId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdatedOn")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("ShowSubcontractorId");
-
-                    b.HasIndex("ShowId");
-
-                    b.HasIndex("SubcontractorId");
-
-                    b.ToTable("tShowSubcontractor");
                 });
 
             modelBuilder.Entity("VenueTracker.Models.tStatus", b =>
@@ -287,43 +256,14 @@ namespace VenueTracker.Migrations
                     b.Navigation("tVenue");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tShowSubcontractor", b =>
-                {
-                    b.HasOne("VenueTracker.Models.tShow", "tShow")
-                        .WithMany("tShowSubcontractors")
-                        .HasForeignKey("ShowId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VenueTracker.Models.tSubcontractor", "tSubcontractor")
-                        .WithMany("tShowSubcontractors")
-                        .HasForeignKey("SubcontractorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("tShow");
-
-                    b.Navigation("tSubcontractor");
-                });
-
             modelBuilder.Entity("VenueTracker.Models.tPaymentType", b =>
                 {
                     b.Navigation("tShows");
                 });
 
-            modelBuilder.Entity("VenueTracker.Models.tShow", b =>
-                {
-                    b.Navigation("tShowSubcontractors");
-                });
-
             modelBuilder.Entity("VenueTracker.Models.tStatus", b =>
                 {
                     b.Navigation("tShows");
-                });
-
-            modelBuilder.Entity("VenueTracker.Models.tSubcontractor", b =>
-                {
-                    b.Navigation("tShowSubcontractors");
                 });
 
             modelBuilder.Entity("VenueTracker.Models.tVenue", b =>

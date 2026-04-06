@@ -39,6 +39,17 @@ if (app.Environment.IsDevelopment())
                     Console.WriteLine("CSV seeding completed!");
                 }
             }
+
+            // Seed PaymentTypes if not already present
+            if (!context.tPaymentTypes.Any())
+            {
+                context.tPaymentTypes.AddRange(
+                    new VenueTracker.Models.tPaymentType { PaymentType = "Cash" },
+                    new VenueTracker.Models.tPaymentType { PaymentType = "Check" }
+                );
+                await context.SaveChangesAsync();
+                Console.WriteLine("PaymentTypes seeded successfully!");
+            }
         }
     }
     catch (Exception ex)

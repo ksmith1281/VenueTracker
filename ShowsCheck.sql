@@ -1,3 +1,4 @@
 -- SQLite
-SELECT *
+SELECT 
+*
 FROM tShow

@@ -1,9 +1,11 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 @using VenueTracker.Data
 @using VenueTracker.Models
 @using Microsoft.EntityFrameworkCore
 @inject AppDbContext Db
 @inject NavigationManager Navigation
+@inject ILogger<Dashboard> Logger
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -22,20 +24,15 @@ else
                 <th>Show Date</th>
                 <th>Status</th>
                 <th>Show Name</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var show in currentYearShows)
             {
-                <tr>
+                <tr @onclick="() => EditShow(show.ShowId)" style="cursor: pointer;">
                     <td>@show.ShowDate.ToShortDateString()</td>
                     <td>@show.StatusName</td>
                     <td>@show.ShowName</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-2" @onclick="() => EditShow(show.ShowId)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteShow(show.ShowId)">Delete</button>
-                    </td>
                 </tr>
             }
         </tbody>
@@ -73,18 +70,9 @@ else
 
     private void EditShow(int showId)
     {
+        Logger.LogInformation($"EditShow called with showId: {showId}");
+        Console.WriteLine($"DEBUG: EditShow called with showId: {showId}");
         Navigation.NavigateTo($"/edit-show/{showId}");
-    }
-
-    private async Task DeleteShow(int showId)
-    {
-        var show = Db.tShows.FirstOrDefault(s => s.ShowId == showId);
-        if (show != null)
-        {
-            Db.tShows.Remove(show);
-            await Db.SaveChangesAsync();
-            LoadData();
-        }
     }
 
     private class ShowView
