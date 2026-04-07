@@ -2,21 +2,35 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch VenueTracker",
+            "name": "Launch VenueTracker (Browser)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "prepare-debug",
             "program": "${workspaceFolder}/bin/Debug/net8.0/VenueTracker.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:5259"
+                "ASPNETCORE_URLS": "http://localhost:5260"
             },
             "serverReadyAction": {
                 "action": "openExternally",
                 "pattern": "\\bNow listening on:\\s+(http://\\S+)"
+            }
+        },
+        {
+            "name": "Launch VenueTracker (No Browser)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "prepare-debug",
+            "program": "${workspaceFolder}/bin/Debug/net8.0/VenueTracker.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5260"
             }
         }
     ]

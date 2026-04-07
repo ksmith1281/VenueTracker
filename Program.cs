@@ -1,15 +1,17 @@
-using VenueTracker.Components;
 using Microsoft.EntityFrameworkCore;
 using VenueTracker.Data;
 using VenueTracker.Seeding;
 using MudBlazor.Services;
+using VenueTracker.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = true;
+    });
 builder.Services.AddMudServices();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -78,3 +80,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+

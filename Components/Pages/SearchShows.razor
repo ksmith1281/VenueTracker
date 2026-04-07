@@ -63,8 +63,10 @@ else if (!string.IsNullOrWhiteSpace(searchTerm))
             return;
         }
 
+        var trimmedSearch = searchTerm.Trim();
+
         // Try to parse as date first
-        if (DateTime.TryParse(searchTerm, out var searchDate))
+        if (DateTime.TryParse(trimmedSearch, out var searchDate))
         {
             searchResults = Db.tShows
                 .Include(s => s.tVenue)
@@ -84,13 +86,14 @@ else if (!string.IsNullOrWhiteSpace(searchTerm))
         else
         {
             // Search by show name or venue name
+            var likeTerm = $"%{trimmedSearch}%";
+
             searchResults = Db.tShows
                 .Include(s => s.tVenue)
                 .Include(s => s.tStatus)
                 .Where(s =>
-                    (s.ShowName != null && s.ShowName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (s.tVenue != null && s.tVenue.VenueName != null && s.tVenue.VenueName.Contains(searchTerm,
-StringComparison.OrdinalIgnoreCase)))
+                    (s.ShowName != null && EF.Functions.Like(s.ShowName, likeTerm)) ||
+                    (s.tVenue != null && s.tVenue.VenueName != null && EF.Functions.Like(s.tVenue.VenueName, likeTerm)))
                 .OrderBy(s => s.ShowDate)
                 .Select(s => new SearchResult
                 {
