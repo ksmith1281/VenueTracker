@@ -6,115 +6,91 @@
 @using Microsoft.EntityFrameworkCore
 @inject AppDbContext Db
 
-<h3>Shows</h3>
+<PageTitle>Admin - Shows</PageTitle>
 
-<EditForm Model="@currentShow" OnValidSubmit="@HandleValidSubmit" FormName="ShowForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<RadzenText TextStyle="TextStyle.H5" class="rz-mb-4">Shows</RadzenText>
 
-    <div class="mb-3">
-        <label for="venue" class="form-label">Venue</label>
-        <select id="venue" class="form-select" @bind="currentShow.VenueId">
-            <option value="0">Select venue</option>
-            @foreach (var venue in venues)
-            {
-                <option value="@venue.VenueId">@venue.VenueName (@venue.City, @venue.State)</option>
-            }
-        </select>
-        <ValidationMessage For="@(() => currentShow.VenueId)" />
-    </div>
+<RadzenCard class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">@(isEditMode ? "Edit Show" : "Add Show")</RadzenText>
+    <EditForm Model="@currentShow" OnValidSubmit="@HandleValidSubmit" FormName="ShowForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="mb-3">
-        <label for="showDate" class="form-label">Show Date</label>
-        <InputDate id="showDate" class="form-control" @bind-Value="currentShow.ShowDate" />
-        <ValidationMessage For="@(() => currentShow.ShowDate)" />
-    </div>
+        <RadzenFormField Text="Venue" class="rz-w-100 rz-mb-4">
+            <RadzenDropDown TValue="int" Data="venues" TextProperty="DisplayName" ValueProperty="VenueId"
+                            @bind-Value="currentShow.VenueId" Placeholder="Select venue" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <div class="mb-3">
-        <label for="status" class="form-label">Status</label>
-        <select id="status" class="form-select" @bind="currentShow.StatusId">
-            <option value="0">Select status</option>
-            @foreach (var status in statuses)
-            {
-                <option value="@status.StatusId">@status.StatusName</option>
-            }
-        </select>
-        <ValidationMessage For="@(() => currentShow.StatusId)" />
-    </div>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+            <RadzenFormField Text="Show Date" Style="flex: 1;">
+                <RadzenDatePicker TValue="DateTime" @bind-Value="currentShow.ShowDate" DateFormat="MM/dd/yyyy" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenFormField Text="Status" Style="flex: 1;">
+                <RadzenDropDown TValue="int" Data="statuses" TextProperty="StatusName" ValueProperty="StatusId"
+                                @bind-Value="currentShow.StatusId" Placeholder="Select status" Style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
 
-    <div class="mb-3">
-        <label for="walkAmount" class="form-label">Walk Amount</label>
-        <InputNumber id="walkAmount" class="form-control" @bind-Value="currentShow.WalkAmount" />
-    </div>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+            <RadzenFormField Text="Walk Amount" Style="flex: 1;">
+                <RadzenNumeric TValue="decimal" @bind-Value="currentShow.WalkAmount" Format="C" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenFormField Text="Merch Amount" Style="flex: 1;">
+                <RadzenNumeric TValue="decimal?" @bind-Value="currentShow.MerchAmount" Format="C" Style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
 
-    <div class="mb-3">
-        <label for="merchAmount" class="form-label">Merch Amount</label>
-        <InputNumber id="merchAmount" class="form-control" @bind-Value="currentShow.MerchAmount" />
-    </div>
+        <RadzenFormField Text="Notes" class="rz-w-100 rz-mb-4">
+            <RadzenTextArea @bind-Value="currentShow.Notes" Rows="3" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <div class="mb-3">
-        <label for="notes" class="form-label">Notes</label>
-        <InputTextArea id="notes" class="form-control" @bind-Value="currentShow.Notes" />
-    </div>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="@(isEditMode ? "Save Show" : "Add Show")"
+                          Icon="save" ButtonStyle="ButtonStyle.Primary" />
+            <RadzenButton Text="Cancel" Icon="cancel" ButtonStyle="ButtonStyle.Light" Click="ResetForm" ButtonType="ButtonType.Button" />
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
 
-    <button type="submit" class="btn btn-primary">@(isEditMode ? "Save Show" : "Add Show")</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="ResetForm">Cancel</button>
-</EditForm>
-
-<hr />
-
-<h4>Show List</h4>
-
-@if (shows.Count == 0)
-{
-    <p>No shows available.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ShowId</th>
-                <th>VenueId</th>
-                <th>ShowDate</th>
-                <th>ShowName</th>
-                <th>Status</th>
-                <th>WalkAmount</th>
-                <th>MerchAmount</th>
-                <th>Notes</th>
-                <th>CreatedOn</th>
-                <th>UpdatedOn</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var show in shows)
-            {
-                <tr>
-                    <td>@show.ShowId</td>
-                    <td>@show.VenueId</td>
-                    <td>@show.ShowDate.ToShortDateString()</td>
-                    <td>@show.ShowName</td>
-                    <td>@show.tStatus?.StatusName</td>
-                    <td>@show.WalkAmount</td>
-                    <td>@show.MerchAmount</td>
-                    <td>@show.Notes</td>
-                    <td>@show.CreatedOn</td>
-                    <td>@show.UpdatedOn</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => EditShow(show)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteShow(show.ShowId)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<RadzenCard>
+    <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">Show List</RadzenText>
+    @if (shows.Count == 0)
+    {
+        <RadzenText>No shows available.</RadzenText>
+    }
+    else
+    {
+        <RadzenDataGrid Data="shows" TItem="tShow" AllowSorting="true">
+            <Columns>
+                <RadzenDataGridColumn TItem="tShow" Property="ShowId" Title="ID" Width="60px" />
+                <RadzenDataGridColumn TItem="tShow" Property="ShowDate" Title="Date" FormatString="{0:d}" />
+                <RadzenDataGridColumn TItem="tShow" Property="ShowName" Title="Show Name" />
+                <RadzenDataGridColumn TItem="tShow" Title="Venue">
+                    <Template Context="s">@s.tVenue?.VenueName</Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="tShow" Title="Status">
+                    <Template Context="s">@s.tStatus?.StatusName</Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="tShow" Property="WalkAmount" Title="Walk" FormatString="{0:C}" />
+                <RadzenDataGridColumn TItem="tShow" Property="MerchAmount" Title="Merch" FormatString="{0:C}" />
+                <RadzenDataGridColumn TItem="tShow" Property="Notes" Title="Notes" />
+                <RadzenDataGridColumn TItem="tShow" Title="Actions" Width="120px">
+                    <Template Context="s">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                      Click="@((MouseEventArgs _) => EditShow(s))" class="rz-mr-1" />
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                      Click="@((MouseEventArgs _) => DeleteShow(s.ShowId))" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenCard>
 
 @code {
     private tShow currentShow = new() { ShowDate = DateTime.Today };
     private List<tShow> shows = new();
-    private List<tVenue> venues = new();
+    private List<VenueOption> venues = new();
     private List<tStatus> statuses = new();
     private bool isEditMode = false;
 
@@ -128,6 +104,11 @@ else
         venues = Db.tVenues
             .Where(v => v.IsActive)
             .OrderBy(v => v.VenueName)
+            .Select(v => new VenueOption
+            {
+                VenueId = v.VenueId,
+                DisplayName = v.VenueName + " (" + v.City + ", " + v.State + ")"
+            })
             .ToList();
 
         statuses = Db.tStatuses
@@ -143,10 +124,7 @@ else
 
     private void HandleValidSubmit()
     {
-        if (currentShow.VenueId <= 0 || currentShow.StatusId <= 0)
-        {
-            return; // invalid selection
-        }
+        if (currentShow.VenueId <= 0 || currentShow.StatusId <= 0) return;
 
         if (isEditMode)
         {
@@ -161,13 +139,12 @@ else
                 showFromDb.MerchAmount = currentShow.MerchAmount;
                 showFromDb.Notes = currentShow.Notes;
                 showFromDb.UpdatedOn = DateTime.Now;
-
                 Db.SaveChanges();
             }
         }
         else
         {
-            var newShow = new tShow
+            Db.tShows.Add(new tShow
             {
                 VenueId = currentShow.VenueId,
                 ShowDate = currentShow.ShowDate,
@@ -178,9 +155,7 @@ else
                 Notes = currentShow.Notes,
                 CreatedOn = DateTime.Now,
                 UpdatedOn = DateTime.Now
-            };
-
-            Db.tShows.Add(newShow);
+            });
             Db.SaveChanges();
         }
 
@@ -203,7 +178,6 @@ else
             CreatedOn = show.CreatedOn,
             UpdatedOn = show.UpdatedOn
         };
-
         isEditMode = true;
     }
 
@@ -223,5 +197,11 @@ else
     {
         currentShow = new tShow { ShowDate = DateTime.Today };
         isEditMode = false;
+    }
+
+    private class VenueOption
+    {
+        public int VenueId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
     }
 }

@@ -6,95 +6,77 @@
 @using Microsoft.EntityFrameworkCore
 @inject AppDbContext Db
 
-<h3>Venues</h3>
+<PageTitle>Admin - Venues</PageTitle>
 
-<EditForm Model="@currentVenue" OnValidSubmit="@HandleValidSubmit" FormName="VenueForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<RadzenText TextStyle="TextStyle.H5" class="rz-mb-4">Venues</RadzenText>
 
-    <div class="mb-3">
-        <label for="venueName" class="form-label">Venue Name</label>
-        <InputText id="venueName" class="form-control" @bind-Value="currentVenue.VenueName" />
-        <ValidationMessage For="@(() => currentVenue.VenueName)" />
-    </div>
+<RadzenCard class="rz-mb-4">
+    <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">@(isEditMode ? "Edit Venue" : "Add Venue")</RadzenText>
+    <EditForm Model="@currentVenue" OnValidSubmit="@HandleValidSubmit" FormName="VenueForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="mb-3">
-        <label for="city" class="form-label">City</label>
-        <InputText id="city" class="form-control" @bind-Value="currentVenue.City" />
-        <ValidationMessage For="@(() => currentVenue.City)" />
-    </div>
+        <RadzenFormField Text="Venue Name" class="rz-w-100 rz-mb-4">
+            <RadzenTextBox @bind-Value="currentVenue.VenueName" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <div class="mb-3">
-        <label for="state" class="form-label">State</label>
-        <InputText id="state" class="form-control" @bind-Value="currentVenue.State" />
-        <ValidationMessage For="@(() => currentVenue.State)" />
-    </div>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+            <RadzenFormField Text="City" Style="flex: 1;">
+                <RadzenTextBox @bind-Value="currentVenue.City" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenFormField Text="State" Style="flex: 1;">
+                <RadzenTextBox @bind-Value="currentVenue.State" Style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
 
-    <div class="form-check mb-3">
-        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="currentVenue.IsActive" />
-        <label for="isActive" class="form-check-label">Active</label>
-    </div>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px" class="rz-mb-4">
+            <RadzenCheckBox TValue="bool" @bind-Value="currentVenue.IsActive" />
+            <RadzenLabel Text="Active" />
+        </RadzenStack>
 
-    <button type="submit" class="btn btn-primary">
-        @(isEditMode ? "Save Changes" : "Add Venue")
-    </button>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="@(isEditMode ? "Save Changes" : "Add Venue")"
+                          Icon="save" ButtonStyle="ButtonStyle.Primary" />
+            <RadzenButton Text="Cancel" Icon="cancel" ButtonStyle="ButtonStyle.Light" Click="ResetForm" ButtonType="ButtonType.Button" />
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
 
-    <button type="button" class="btn btn-secondary ms-2" @onclick="ResetForm">
-        Cancel
-    </button>
-</EditForm>
-
-<hr />
-
-<h4>Venue List</h4>
-
-@if (venues.Count == 0)
-{
-    <p>No venues added yet.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>VenueId</th>
-                <th>VenueName</th>
-                <th>City</th>
-                <th>State</th>
-                <th>IsActive</th>
-                <th>CreatedOn</th>
-                <th>UpdatedOn</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var venue in venues)
-            {
-                <tr>
-                    <td>@venue.VenueId</td>
-                    <td>@venue.VenueName</td>
-                    <td>@venue.City</td>
-                    <td>@venue.State</td>
-                    <td>@venue.IsActive</td>
-                    <td>@venue.CreatedOn</td>
-                    <td>@venue.UpdatedOn</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-secondary me-1"
-                                @onclick="() => EditVenue(venue)">Edit</button>
-                        <button type="button" class="btn btn-sm btn-danger"
-                                @onclick="() => DeleteVenue(venue.VenueId)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<RadzenCard>
+    <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">Venue List</RadzenText>
+    @if (venues.Count == 0)
+    {
+        <RadzenText>No venues added yet.</RadzenText>
+    }
+    else
+    {
+        <RadzenDataGrid Data="venues" TItem="tVenue" AllowSorting="true">
+            <Columns>
+                <RadzenDataGridColumn TItem="tVenue" Property="VenueId" Title="ID" Width="60px" />
+                <RadzenDataGridColumn TItem="tVenue" Property="VenueName" Title="Venue Name" />
+                <RadzenDataGridColumn TItem="tVenue" Property="City" Title="City" />
+                <RadzenDataGridColumn TItem="tVenue" Property="State" Title="State" />
+                <RadzenDataGridColumn TItem="tVenue" Title="Active">
+                    <Template Context="v">@(v.IsActive ? "Yes" : "No")</Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="tVenue" Property="CreatedOn" Title="Created" FormatString="{0:d}" />
+                <RadzenDataGridColumn TItem="tVenue" Property="UpdatedOn" Title="Updated" FormatString="{0:d}" />
+                <RadzenDataGridColumn TItem="tVenue" Title="Actions" Width="120px">
+                    <Template Context="v">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                      Click="() => EditVenue(v)" class="rz-mr-1" />
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                      Click="() => DeleteVenue(v.VenueId)" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenCard>
 
 @code {
     private tVenue currentVenue = new() { IsActive = true };
-
     private List<tVenue> venues = new();
-
     private bool isEditMode = false;
 
     protected override void OnInitialized()
@@ -114,7 +96,6 @@ else
         if (isEditMode)
         {
             var venueToUpdate = Db.tVenues.FirstOrDefault(v => v.VenueId == currentVenue.VenueId);
-
             if (venueToUpdate is not null)
             {
                 venueToUpdate.VenueName = currentVenue.VenueName;
@@ -122,13 +103,12 @@ else
                 venueToUpdate.State = currentVenue.State;
                 venueToUpdate.IsActive = currentVenue.IsActive;
                 venueToUpdate.UpdatedOn = DateTime.Now;
-
                 Db.SaveChanges();
             }
         }
         else
         {
-            var venueToAdd = new tVenue
+            Db.tVenues.Add(new tVenue
             {
                 VenueName = currentVenue.VenueName,
                 City = currentVenue.City,
@@ -136,9 +116,7 @@ else
                 IsActive = currentVenue.IsActive,
                 CreatedOn = DateTime.Now,
                 UpdatedOn = DateTime.Now
-            };
-
-            Db.tVenues.Add(venueToAdd);
+            });
             Db.SaveChanges();
         }
 
@@ -158,7 +136,6 @@ else
             CreatedOn = venue.CreatedOn,
             UpdatedOn = venue.UpdatedOn
         };
-
         isEditMode = true;
     }
 
@@ -176,11 +153,7 @@ else
 
     private void ResetForm()
     {
-        currentVenue = new tVenue
-        {
-            IsActive = true
-        };
-
+        currentVenue = new tVenue { IsActive = true };
         isEditMode = false;
     }
 }

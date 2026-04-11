@@ -10,176 +10,123 @@
 
 <PageTitle>Show Detail</PageTitle>
 
-<h1>Show Detail</h1>
+<RadzenText TextStyle="TextStyle.H5" class="rz-mb-4">Show Detail</RadzenText>
 
 @if (show == null)
 {
-    <p>Loading...</p>
+    <RadzenText>Loading...</RadzenText>
 }
 else
 {
-    <div class="mb-3">
-        <label for="showSelect" class="form-label">Show</label>
-        <select id="showSelect" class="form-select" @bind="selectedShowId" @bind:event="onchange">
-            <option value="0">Select show</option>
-            @foreach (var option in showOptions)
-            {
-                <option value="@option.ShowId">@option.DisplayText</option>
-            }
-        </select>
-    </div>
+    <RadzenCard class="rz-mb-4">
+        <RadzenFormField Text="Show" class="rz-w-100 rz-mb-4">
+            <RadzenDropDown TValue="int" Data="showOptions" TextProperty="DisplayText" ValueProperty="ShowId"
+                            @bind-Value="selectedShowId" Change="OnShowChanged" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <EditForm Model="@show" OnValidSubmit="@HandleValidSubmit" FormName="EditShowForm">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+        <EditForm Model="@show" OnValidSubmit="@HandleValidSubmit" FormName="EditShowForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label class="form-label">Venue</label>
-                <p class="form-control-plaintext">@(show.tVenue?.VenueName) (@(show.tVenue?.City), @(show.tVenue?.State))
-                </p>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Status</label>
-                <p class="form-control-plaintext">@show.tStatus?.StatusName</p>
-            </div>
-        </div>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+                <RadzenFormField Text="Venue" Style="flex: 1;">
+                    <RadzenText>@(show.tVenue?.VenueName) (@(show.tVenue?.City), @(show.tVenue?.State))</RadzenText>
+                </RadzenFormField>
+                <RadzenFormField Text="Status" Style="flex: 1;">
+                    <RadzenText>@show.tStatus?.StatusName</RadzenText>
+                </RadzenFormField>
+            </RadzenStack>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="walkAmount" class="form-label">Walk Amount</label>
-                <InputNumber id="walkAmount" class="form-control" @bind-Value="show.WalkAmount" @bind-Value:format="C" />
-            </div>
-            <div class="col-md-6">
-                <label for="paymentType" class="form-label">Payment Type</label>
-                <select id="paymentType" class="form-select" @bind="show.PaymentTypeId">
-                    <option value="">Select payment type</option>
-                    @foreach (var paymentType in paymentTypes)
-                    {
-                        <option value="@paymentType.PaymentTypeId">@paymentType.PaymentType</option>
-                    }
-                </select>
-            </div>
-        </div>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+                <RadzenFormField Text="Walk Amount" Style="flex: 1;">
+                    <RadzenNumeric TValue="decimal" @bind-Value="show.WalkAmount" Format="C" Style="width: 100%;" />
+                </RadzenFormField>
+                <RadzenFormField Text="Payment Type" Style="flex: 1;">
+                    <RadzenDropDown TValue="int?" Data="paymentTypes" TextProperty="PaymentType" ValueProperty="PaymentTypeId"
+                                    @bind-Value="show.PaymentTypeId" Placeholder="Select payment type" Style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenStack>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="merchAmount" class="form-label">Merch Amount</label>
-                <InputNumber id="merchAmount" class="form-control" @bind-Value="show.MerchAmount" @bind-Value:format="C" />
-            </div>
-        </div>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+                <RadzenFormField Text="Merch Amount" Style="flex: 1;">
+                    <RadzenNumeric TValue="decimal?" @bind-Value="show.MerchAmount" Format="C" Style="width: 100%;" />
+                </RadzenFormField>
+                <div style="flex: 1;"></div>
+            </RadzenStack>
 
-        <div class="mb-3">
-            <label for="deal" class="form-label">Deal</label>
-            <InputText id="deal" class="form-control" @bind-Value="show.Deal" />
-        </div>
+            <RadzenFormField Text="Deal" class="rz-w-100 rz-mb-4">
+                <RadzenTextBox @bind-Value="show.Deal" Style="width: 100%;" />
+            </RadzenFormField>
 
-        <div class="mb-3">
-            <label for="notes" class="form-label">Notes</label>
-            <InputTextArea id="notes" class="form-control" @bind-Value="show.Notes" rows="3" />
-        </div>
+            <RadzenFormField Text="Notes" class="rz-w-100 rz-mb-4">
+                <RadzenTextArea @bind-Value="show.Notes" Rows="3" Style="width: 100%;" />
+            </RadzenFormField>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <button type="button" class="btn btn-danger" @onclick="DeleteShow">Delete Show</button>
-            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-        </div>
-    </EditForm>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Save Changes" Icon="save" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Text="Delete Show" Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteShow" ButtonType="ButtonType.Button" />
+                <RadzenButton Text="Cancel" Icon="cancel" ButtonStyle="ButtonStyle.Light" Click="Cancel" ButtonType="ButtonType.Button" />
+            </RadzenStack>
+        </EditForm>
+    </RadzenCard>
 
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Subcontractors</h5>
-        </div>
-        <div class="card-body">
-            @if (showSubcontractors.Count > 0)
-            {
-                <div class="mb-4">
-                    <h6>Current Subcontractors</h6>
-                    <table class="table table-sm table-striped">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Amount</th>
-                                <th>Notes</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var subContractor in showSubcontractors)
-                            {
-                                @if (editingSubcontractorId == subContractor.ShowSubcontractorId)
-                                {
-                                    <tr>
-                                        <td>@subContractor.tSubcontractor?.Name</td>
-                                        <td>
-                                            <input type="text" class="form-control form-control-sm" @bind="editingRole" />
-                                        </td>
-                                        <td>
-                                            <input type="number" class="form-control form-control-sm" @bind="editingAmount"
-                                                   step="0.01" />
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control form-control-sm" @bind="editingNotes" />
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-success"
-                                                    @onclick="() => SaveSubcontractorEdit(subContractor.ShowSubcontractorId)">Save</button>
-                                            <button type="button" class="btn btn-sm btn-secondary" @onclick="CancelEdit">Cancel</button>
-                                        </td>
-                                    </tr>
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td>@subContractor.tSubcontractor?.Name</td>
-                                        <td>@subContractor.tSubcontractor?.Role</td>
-                                        <td>@subContractor.Amount.ToString("C")</td>
-                                        <td>@subContractor.Notes</td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-primary"
-                                                    @onclick="() => EditSubcontractor(subContractor)">Edit</button>
-                                            <button type="button" class="btn btn-sm btn-danger"
-                                                    @onclick="() => DeleteShowSubcontractor(subContractor.ShowSubcontractorId)">Delete</button>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">Subcontractors</RadzenText>
 
-            <h6>Add Subcontractor</h6>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="subcontractor" class="form-label">Subcontractor</label>
-                    <select id="subcontractor" class="form-select" @bind="selectedSubcontractorId">
-                        <option value="0">Select subcontractor</option>
-                        @foreach (var subcontractor in subcontractors)
-                        {
-                            <option value="@subcontractor.SubcontractorId">@subcontractor.Name (@subcontractor.Role)</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="subAmount" class="form-label">Amount @if (selectedSubcontractorId > 0) {
-                        <span class="text-danger">*</span>
-                    }
-                </label>
-                <input type="number" id="subAmount" class="form-control" @bind="newSubcontractorAmount" step="0.01" />
-            </div>
-            <div class="col-md-4">
-                <label for="subNotes" class="form-label">Notes</label>
-                <input type="text" id="subNotes" class="form-control" @bind="newSubcontractorNotes" />
-            </div>
-        </div>
-        <button type="button" class="btn btn-sm btn-success" @onclick="AddSubcontractor"
-                disabled="@(selectedSubcontractorId <= 0 || newSubcontractorAmount <= 0)">
-            Add Subcontractor
-        </button>
-    </div>
-</div>
+        @if (showSubcontractors.Count > 0)
+        {
+            <RadzenDataGrid Data="showSubcontractors" TItem="tShowSubcontractor" class="rz-mb-4"
+                            EditMode="DataGridEditMode.Single"
+                            @ref="subcontractorGrid"
+                            RowUpdate="OnSubcontractorRowUpdate">
+                <Columns>
+                    <RadzenDataGridColumn TItem="tShowSubcontractor" Title="Name">
+                        <Template Context="sub">@sub.tSubcontractor?.Name</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="tShowSubcontractor" Title="Role">
+                        <Template Context="sub">@sub.tSubcontractor?.Role</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="tShowSubcontractor" Property="Amount" Title="Amount" FormatString="{0:C}" />
+                    <RadzenDataGridColumn TItem="tShowSubcontractor" Property="Notes" Title="Notes">
+                        <EditTemplate Context="sub">
+                            <RadzenTextBox @bind-Value="sub.Notes" Style="width: 100%;" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="tShowSubcontractor" Title="Actions" Width="140px">
+                        <Template Context="sub">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                          Click="() => subcontractorGrid.EditRow(sub)" class="rz-mr-1" />
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                          Click="() => DeleteShowSubcontractor(sub.ShowSubcontractorId)" />
+                        </Template>
+                        <EditTemplate Context="sub">
+                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small"
+                                          Click="() => subcontractorGrid.UpdateRow(sub)" class="rz-mr-1" />
+                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                          Click="() => subcontractorGrid.CancelEditRow(sub)" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+
+        <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-mb-3">Add Subcontractor</RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Wrap="FlexWrap.Wrap" class="rz-mb-3">
+            <RadzenFormField Text="Subcontractor" Style="flex: 1;">
+                <RadzenDropDown TValue="int" Data="subcontractors" TextProperty="Name" ValueProperty="SubcontractorId"
+                                @bind-Value="selectedSubcontractorId" Placeholder="Select subcontractor" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenFormField Text="Amount" Style="flex: 1;">
+                <RadzenNumeric TValue="decimal" @bind-Value="newSubcontractorAmount" Format="C" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenFormField Text="Notes" Style="flex: 1;">
+                <RadzenTextBox @bind-Value="newSubcontractorNotes" Style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
+        <RadzenButton Text="Add Subcontractor" Icon="add_circle" ButtonStyle="ButtonStyle.Success"
+                      Click="AddSubcontractor"
+                      Disabled="@(selectedSubcontractorId <= 0 || newSubcontractorAmount <= 0)" />
+    </RadzenCard>
 }
 
 @code {
@@ -193,6 +140,7 @@ else
     private List<tSubcontractor> subcontractors = new();
     private List<tShowSubcontractor> showSubcontractors = new();
     private List<ShowOption> showOptions = new();
+    private RadzenDataGrid<tShowSubcontractor> subcontractorGrid = default!;
 
     private int selectedShowId
     {
@@ -212,11 +160,6 @@ else
     private decimal newSubcontractorAmount = 0;
     private string newSubcontractorNotes = string.Empty;
 
-    private int editingSubcontractorId = 0;
-    private string editingRole = string.Empty;
-    private decimal editingAmount = 0;
-    private string editingNotes = string.Empty;
-
     protected override void OnInitialized()
     {
         LoadReferenceData();
@@ -225,6 +168,11 @@ else
     protected override void OnParametersSet()
     {
         selectedShowId = ShowId;
+        LoadShowData();
+    }
+
+    private void OnShowChanged(object value)
+    {
         LoadShowData();
     }
 
@@ -278,11 +226,7 @@ else
 
     private void HandleValidSubmit()
     {
-        if (show == null)
-        {
-            return;
-        }
-
+        if (show == null) return;
         show.UpdatedOn = DateTime.Now;
         Db.SaveChanges();
         Navigation.NavigateTo("/");
@@ -305,10 +249,7 @@ else
 
     private void AddSubcontractor()
     {
-        if (selectedSubcontractorId <= 0 || newSubcontractorAmount <= 0 || show == null)
-        {
-            return;
-        }
+        if (selectedSubcontractorId <= 0 || newSubcontractorAmount <= 0 || show == null) return;
 
         var newShowSubcontractor = new tShowSubcontractor
         {
@@ -321,7 +262,6 @@ else
         Db.tShowSubcontractors.Add(newShowSubcontractor);
         Db.SaveChanges();
 
-        // Reload subcontractors and reset form
         LoadShowData();
         selectedSubcontractorId = 0;
         newSubcontractorAmount = 0;
@@ -339,34 +279,17 @@ else
         }
     }
 
-    private void EditSubcontractor(tShowSubcontractor subcontractor)
+    private void OnSubcontractorRowUpdate(tShowSubcontractor sub)
     {
-        editingSubcontractorId = subcontractor.ShowSubcontractorId;
-        editingRole = subcontractor.tSubcontractor?.Role ?? string.Empty;
-        editingAmount = subcontractor.Amount;
-        editingNotes = subcontractor.Notes ?? string.Empty;
-    }
-
-    private void SaveSubcontractorEdit(int showSubcontractorId)
-    {
-        var subcontractor = Db.tShowSubcontractors.FirstOrDefault(ss => ss.ShowSubcontractorId == showSubcontractorId);
-        if (subcontractor != null && editingAmount > 0)
+        var existing = Db.tShowSubcontractors.FirstOrDefault(ss => ss.ShowSubcontractorId == sub.ShowSubcontractorId);
+        if (existing != null && sub.Amount > 0)
         {
-            subcontractor.Amount = editingAmount;
-            subcontractor.Notes = editingNotes;
-            subcontractor.UpdatedOn = DateTime.Now;
+            existing.Amount = sub.Amount;
+            existing.Notes = sub.Notes;
+            existing.UpdatedOn = DateTime.Now;
             Db.SaveChanges();
             LoadShowData();
-            CancelEdit();
         }
-    }
-
-    private void CancelEdit()
-    {
-        editingSubcontractorId = 0;
-        editingRole = string.Empty;
-        editingAmount = 0;
-        editingNotes = string.Empty;
     }
 
     private class ShowOption

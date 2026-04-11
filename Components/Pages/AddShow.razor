@@ -9,59 +9,65 @@
 
 <PageTitle>Add New Show</PageTitle>
 
-<h3>Add New Show</h3>
+<RadzenText TextStyle="TextStyle.H5" class="rz-mb-4">Add New Show</RadzenText>
 
-<EditForm Model="@newShow" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<RadzenCard class="rz-mb-4">
+    <EditForm Model="@newShow" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="mb-3">
-        <label for="venue" class="form-label">Venue</label>
-        <select id="venue" class="form-select" @bind="newShow.VenueId">
-            <option value="0">Select venue</option>
-            @foreach (var venue in venues)
-            {
-                <option value="@venue.VenueId">@venue.VenueName (@venue.City, @venue.State)</option>
-            }
-        </select>
-        <ValidationMessage For="@(() => newShow.VenueId)" />
-    </div>
+        <RadzenFormField Text="Venue" class="rz-w-100 rz-mb-4">
+            <RadzenDropDown TValue="int" Data="venues" TextProperty="DisplayName" ValueProperty="VenueId"
+                            @bind-Value="newShow.VenueId" Placeholder="Select venue" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <div class="mb-3">
-        <label for="showDate" class="form-label">Show Date</label>
-        <InputDate id="showDate" class="form-control" @bind-Value="newShow.ShowDate" />
-        <ValidationMessage For="@(() => newShow.ShowDate)" />
-    </div>
+        <RadzenFormField Text="Show Date" class="rz-w-100 rz-mb-4">
+            <RadzenDatePicker TValue="DateTime" @bind-Value="newShow.ShowDate" DateFormat="MM/dd/yyyy"
+                              Style="width: 100%;" />
+        </RadzenFormField>
 
-    <div class="mb-3">
-        <label for="deal" class="form-label">Deal</label>
-        <InputText id="deal" class="form-control" @bind-Value="newShow.Deal" />
-    </div>
+        <RadzenFormField Text="Deal" class="rz-w-100 rz-mb-4">
+            <RadzenTextBox @bind-Value="newShow.Deal" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <div class="mb-3">
-        <label for="showName" class="form-label">Show Name (Optional)</label>
-        <InputText id="showName" class="form-control" @bind-Value="newShow.ShowName" />
-    </div>
+        <RadzenFormField Text="Show Name (Optional)" class="rz-w-100 rz-mb-4">
+            <RadzenTextBox @bind-Value="newShow.ShowName" Style="width: 100%;" />
+        </RadzenFormField>
 
-    <button type="submit" class="btn btn-primary">Add Show</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="AddVenue">Add Venue</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
-</EditForm>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Add Show" Icon="add_circle"
+                          ButtonStyle="ButtonStyle.Primary" />
+            <RadzenButton Text="Add Venue" Icon="location_city" ButtonStyle="ButtonStyle.Light" Click="AddVenue"
+                          ButtonType="ButtonType.Button" />
+            <RadzenButton Text="Cancel" Icon="cancel" ButtonStyle="ButtonStyle.Light" Click="Cancel"
+                          ButtonType="ButtonType.Button" />
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
 
-<h4 class="mt-4">Recent Shows</h4>
-<ul class="list-group">
-    @foreach (var show in recentShows)
-    {
-        <li class="list-group-item list-group-item-action" @onclick="() => NavigateToEdit(show.ShowId)">
-            @(show.ShowName ?? $"Show on {show.ShowDate.ToShortDateString()}") - @show.tVenue?.VenueName
-            (@show.tVenue?.City, @show.tVenue?.State)
-        </li>
-    }
-</ul>
+<RadzenCard>
+    <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">Recent Shows</RadzenText>
+    <RadzenDataGrid Data="recentShows" TItem="tShow" AllowSorting="false"
+                    RowClick="@((DataGridRowMouseEventArgs<tShow> e) => NavigateToEdit(e.Data.ShowId))" Style="cursor: pointer;">
+        <Columns>
+            <RadzenDataGridColumn TItem="tShow" Property="ShowDate" Title="Date" FormatString="{0:d}" />
+            <RadzenDataGridColumn TItem="tShow" Title="Show Name">
+                <Template Context="show">
+                    @(show.ShowName ?? $"Show on {show.ShowDate.ToShortDateString()}")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="tShow" Title="Venue">
+                <Template Context="show">
+                    @show.tVenue?.VenueName (@show.tVenue?.City, @show.tVenue?.State)
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
 
 @code {
     private tShow newShow = new() { ShowDate = DateTime.Today };
-    private List<tVenue> venues = new();
+    private List<VenueOption> venues = new();
     private List<tShow> recentShows = new();
 
     protected override void OnInitialized()
@@ -75,6 +81,11 @@
         venues = Db.tVenues
             .Where(v => v.IsActive)
             .OrderBy(v => v.VenueName)
+            .Select(v => new VenueOption
+            {
+                VenueId = v.VenueId,
+                DisplayName = v.VenueName + " (" + v.City + ", " + v.State + ")"
+            })
             .ToList();
     }
 
@@ -89,15 +100,11 @@
 
     private void HandleValidSubmit()
     {
-        if (newShow.VenueId <= 0)
-        {
-            return;
-        }
+        if (newShow.VenueId <= 0) return;
 
         var pendingStatus = Db.tStatuses.FirstOrDefault(s => s.StatusName == "Pending");
         if (pendingStatus == null)
         {
-            // Fallback if not seeded
             pendingStatus = new tStatus { StatusName = "Pending" };
             Db.tStatuses.Add(pendingStatus);
             Db.SaveChanges();
@@ -109,8 +116,6 @@
 
         Db.tShows.Add(newShow);
         Db.SaveChanges();
-
-        LoadRecentShows();
 
         Navigation.NavigateTo("/");
     }
@@ -128,5 +133,11 @@
     private void Cancel()
     {
         Navigation.NavigateTo("/");
+    }
+
+    private class VenueOption
+    {
+        public int VenueId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
     }
 }

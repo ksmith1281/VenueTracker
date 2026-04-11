@@ -10,175 +10,140 @@
 
 <PageTitle>@(venue.VenueId == 0 ? "Add Venue" : "Edit Venue")</PageTitle>
 
-<h3>@(venue.VenueId == 0 ? "Add Venue" : "Edit Venue")</h3>
+<RadzenText TextStyle="TextStyle.H5" class="rz-mb-4">@(venue.VenueId == 0 ? "Add Venue" : "Edit Venue")</RadzenText>
 
-<EditForm Model="@venue" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label for="venueName" class="form-label">Venue Name</label>
-        <InputText id="venueName" class="form-control" @bind-Value="venue.VenueName" />
-        <ValidationMessage For="@(() => venue.VenueName)" />
-    </div>
-
-    <div class="mb-3">
-        <label for="city" class="form-label">City</label>
-        <InputText id="city" class="form-control" @bind-Value="venue.City" />
-        <ValidationMessage For="@(() => venue.City)" />
-    </div>
-
-    <div class="mb-3">
-        <label for="state" class="form-label">State</label>
-        <InputText id="state" class="form-control" @bind-Value="venue.State" />
-        <ValidationMessage For="@(() => venue.State)" />
-    </div>
-
-    <div class="mb-3">
-        <label for="capacity" class="form-label">Capacity</label>
-        <InputNumber id="capacity" class="form-control" @bind-Value="venue.Capacity" />
-    </div>
-
-    <div class="mb-3 form-check">
-        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="venue.IsActive" />
-        <label for="isActive" class="form-check-label">Is Active</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">@(venue.VenueId == 0 ? "Add Venue" : "Update Venue")</button>
-    <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
-</EditForm>
-
-@if (venue.VenueId > 0)
-{
-    <h4 class="mt-4">Buyers</h4>
-
-    @if (buyers.Count == 0)
-    {
-        <p>No buyers associated with this venue.</p>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Cell</th>
-                    <th>Active</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var buyer in buyers)
-                {
-                    <tr>
-                        <td>@buyer.FirstName @buyer.LastName</td>
-                        <td>@buyer.Email</td>
-                        <td>@buyer.Phone</td>
-                        <td>@buyer.Cell</td>
-                        <td>@(buyer.IsActive ? "Yes" : "No")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-
-    <h5>Assign Existing Buyer</h5>
-    <div class="row mb-3">
-        <div class="col-md-8">
-            <select id="buyerSelect" class="form-select" @bind="selectedBuyerId">
-                <option value="0">Select buyer</option>
-                @foreach (var buyer in availableBuyers)
-                {
-                    <option value="@buyer.BuyerId">@buyer.FirstName @buyer.LastName (@buyer.Email)</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-4">
-            <button type="button" class="btn btn-secondary" @onclick="AssignBuyer">Assign Buyer</button>
-        </div>
-    </div>
-
-    <h5>Add New Buyer</h5>
-    <EditForm Model="@newBuyer" OnValidSubmit="@HandleAddBuyer">
+<RadzenCard class="rz-mb-4">
+    <EditForm Model="@venue" OnValidSubmit="@HandleValidSubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="firstName" class="form-label">First Name</label>
-                <InputText id="firstName" class="form-control" @bind-Value="newBuyer.FirstName" />
-                <ValidationMessage For="@(() => newBuyer.FirstName)" />
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="lastName" class="form-label">Last Name</label>
-                <InputText id="lastName" class="form-control" @bind-Value="newBuyer.LastName" />
-                <ValidationMessage For="@(() => newBuyer.LastName)" />
-            </div>
-        </div>
+        <RadzenFormField Text="Venue Name" class="rz-w-100 rz-mb-4">
+            <RadzenTextBox @bind-Value="venue.VenueName" Style="width: 100%;" />
+        </RadzenFormField>
 
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <InputText id="email" class="form-control" @bind-Value="newBuyer.Email" />
-            <ValidationMessage For="@(() => newBuyer.Email)" />
-        </div>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+            <RadzenFormField Text="City" Style="flex: 1;">
+                <RadzenTextBox @bind-Value="venue.City" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenFormField Text="State" Style="flex: 1;">
+                <RadzenTextBox @bind-Value="venue.State" Style="width: 100%;" />
+            </RadzenFormField>
+        </RadzenStack>
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="phone" class="form-label">Phone</label>
-                <InputText id="phone" class="form-control" @bind-Value="newBuyer.Phone" />
-                <ValidationMessage For="@(() => newBuyer.Phone)" />
-            </div>
-            <div class="col-md-6 mb-3">
-                <label for="cell" class="form-label">Cell</label>
-                <InputText id="cell" class="form-control" @bind-Value="newBuyer.Cell" />
-                <ValidationMessage For="@(() => newBuyer.Cell)" />
-            </div>
-        </div>
+        <RadzenFormField Text="Capacity" class="rz-w-100 rz-mb-4">
+            <RadzenNumeric TValue="int?" @bind-Value="venue.Capacity" Style="width: 100%;" />
+        </RadzenFormField>
 
-        <div class="mb-3 form-check">
-            <InputCheckbox id="buyerIsActive" class="form-check-input" @bind-Value="newBuyer.IsActive" />
-            <label for="buyerIsActive" class="form-check-label">Is Active</label>
-        </div>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px" class="rz-mb-4">
+            <RadzenCheckBox TValue="bool" @bind-Value="venue.IsActive" />
+            <RadzenLabel Text="Is Active" />
+        </RadzenStack>
 
-        <button type="submit" class="btn btn-primary">Add Buyer</button>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="8px">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="@(venue.VenueId == 0 ? "Add Venue" : "Update Venue")"
+                          Icon="save" ButtonStyle="ButtonStyle.Primary" />
+            <RadzenButton Text="Cancel" Icon="cancel" ButtonStyle="ButtonStyle.Light" Click="Cancel" ButtonType="ButtonType.Button" />
+        </RadzenStack>
     </EditForm>
+</RadzenCard>
+
+@if (venue.VenueId > 0)
+{
+    <RadzenCard class="rz-mb-4">
+        <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">Buyers</RadzenText>
+
+        @if (buyers.Count == 0)
+        {
+            <RadzenText TextStyle="TextStyle.Body2" class="rz-mb-3">No buyers associated with this venue.</RadzenText>
+        }
+        else
+        {
+            <RadzenDataGrid Data="buyers" TItem="tBuyer" class="rz-mb-4">
+                <Columns>
+                    <RadzenDataGridColumn TItem="tBuyer" Title="Name">
+                        <Template Context="b">@b.FirstName @b.LastName</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="tBuyer" Property="Email" Title="Email" />
+                    <RadzenDataGridColumn TItem="tBuyer" Property="Phone" Title="Phone" />
+                    <RadzenDataGridColumn TItem="tBuyer" Property="Cell" Title="Cell" />
+                    <RadzenDataGridColumn TItem="tBuyer" Title="Active">
+                        <Template Context="b">@(b.IsActive ? "Yes" : "No")</Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+
+        <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-mb-3">Assign Existing Buyer</RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+            <RadzenFormField Text="Buyer" Style="flex: 1;">
+                <RadzenDropDown TValue="int" Data="availableBuyers" @bind-Value="selectedBuyerId"
+                                TextProperty="DisplayName" ValueProperty="BuyerId"
+                                Placeholder="Select buyer" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenButton Text="Assign Buyer" Icon="person_add" ButtonStyle="ButtonStyle.Secondary" Click="AssignBuyer" />
+        </RadzenStack>
+
+        <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-mb-3">Add New Buyer</RadzenText>
+        <EditForm Model="@newBuyer" OnValidSubmit="@HandleAddBuyer">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+                <RadzenFormField Text="First Name" Style="flex: 1;">
+                    <RadzenTextBox @bind-Value="newBuyer.FirstName" Style="width: 100%;" />
+                </RadzenFormField>
+                <RadzenFormField Text="Last Name" Style="flex: 1;">
+                    <RadzenTextBox @bind-Value="newBuyer.LastName" Style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenStack>
+
+            <RadzenFormField Text="Email" class="rz-w-100 rz-mb-4">
+                <RadzenTextBox @bind-Value="newBuyer.Email" Style="width: 100%;" />
+            </RadzenFormField>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mb-4" Wrap="FlexWrap.Wrap">
+                <RadzenFormField Text="Phone" Style="flex: 1;">
+                    <RadzenTextBox @bind-Value="newBuyer.Phone" Style="width: 100%;" />
+                </RadzenFormField>
+                <RadzenFormField Text="Cell" Style="flex: 1;">
+                    <RadzenTextBox @bind-Value="newBuyer.Cell" Style="width: 100%;" />
+                </RadzenFormField>
+            </RadzenStack>
+
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="8px" class="rz-mb-4">
+                <RadzenCheckBox TValue="bool" @bind-Value="newBuyer.IsActive" />
+                <RadzenLabel Text="Is Active" />
+            </RadzenStack>
+
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Add Buyer" Icon="person_add" ButtonStyle="ButtonStyle.Primary" />
+        </EditForm>
+    </RadzenCard>
 }
 
-<h4 class="mt-4">Latest Added Venues</h4>
-
-@if (recentVenues.Count == 0)
-{
-    <p>No venues found.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Venue Name</th>
-                <th>City</th>
-                <th>State</th>
-                <th>Capacity</th>
-                <th>Active</th>
-                <th>Added On</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var v in recentVenues)
-            {
-                <tr @onclick="() => EditVenue(v.VenueId)" style="cursor: pointer;">
-                    <td>@v.VenueName</td>
-                    <td>@v.City</td>
-                    <td>@v.State</td>
-                    <td>@v.Capacity</td>
-                    <td>@(v.IsActive ? "Yes" : "No")</td>
-                    <td>@v.CreatedOn.ToShortDateString()</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<RadzenCard>
+    <RadzenText TextStyle="TextStyle.H6" class="rz-mb-3">Latest Added Venues</RadzenText>
+    @if (recentVenues.Count == 0)
+    {
+        <RadzenText>No venues found.</RadzenText>
+    }
+    else
+    {
+        <RadzenDataGrid Data="recentVenues" TItem="tVenue" AllowSorting="true"
+                        RowClick="OnRecentVenueRowClick"
+                        Style="cursor: pointer;">
+            <Columns>
+                <RadzenDataGridColumn TItem="tVenue" Property="VenueName" Title="Venue Name" />
+                <RadzenDataGridColumn TItem="tVenue" Property="City" Title="City" />
+                <RadzenDataGridColumn TItem="tVenue" Property="State" Title="State" />
+                <RadzenDataGridColumn TItem="tVenue" Property="Capacity" Title="Capacity" />
+                <RadzenDataGridColumn TItem="tVenue" Title="Active">
+                    <Template Context="v">@(v.IsActive ? "Yes" : "No")</Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="tVenue" Property="CreatedOn" Title="Added On" FormatString="{0:d}" />
+            </Columns>
+        </RadzenDataGrid>
+    }
+</RadzenCard>
 
 @code {
     [Parameter]
@@ -186,7 +151,7 @@ else
 
     private tVenue venue = new() { IsActive = true };
     private List<tBuyer> buyers = new();
-    private List<tBuyer> availableBuyers = new();
+    private List<BuyerOption> availableBuyers = new();
     private tBuyer newBuyer = new() { IsActive = true };
     private int selectedBuyerId = 0;
     private List<tVenue> recentVenues = new();
@@ -225,6 +190,11 @@ else
             .Where(b => b.VenueId == null)
             .OrderBy(b => b.LastName)
             .ThenBy(b => b.FirstName)
+            .Select(b => new BuyerOption
+            {
+                BuyerId = b.BuyerId,
+                DisplayName = b.FirstName + " " + b.LastName + " (" + b.Email + ")"
+            })
             .ToList();
     }
 
@@ -248,7 +218,6 @@ else
 
         if (VenueId == null)
         {
-            // After adding, navigate to edit mode
             Navigation.NavigateTo($"/venues/{venue.VenueId}");
         }
         else
@@ -292,6 +261,11 @@ else
         }
     }
 
+    private void OnRecentVenueRowClick(DataGridRowMouseEventArgs<tVenue> args)
+    {
+        if (args.Data != null) EditVenue(args.Data.VenueId);
+    }
+
     private void EditVenue(int venueId)
     {
         Navigation.NavigateTo($"/venues/{venueId}");
@@ -300,5 +274,11 @@ else
     private void Cancel()
     {
         Navigation.NavigateTo("/venues");
+    }
+
+    private class BuyerOption
+    {
+        public int BuyerId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
     }
 }

@@ -5,41 +5,41 @@
 @inject AppDbContext Db
 @inject NavigationManager Navigation
 
-<div class="show-search-bar mb-3 position-relative">
-    <label class="form-label mb-1" for="showSearchInput">Search shows</label>
-    <input id="showSearchInput" class="form-control" placeholder="Search by show name, venue, or deal..." value="@query"
-           @oninput="OnQueryChanged" />
-
-    @if (searchResults?.Count > 0)
-    {
-        <ul class="list-group position-absolute w-100 shadow-sm"
-            style="z-index: 1000; max-height: 240px; overflow-y: auto;">
-            @foreach (var result in searchResults)
-            {
-                <li class="list-group-item list-group-item-action" @onclick="() => SelectShow(result.ShowId)">
-                    <strong>@result.DisplayText</strong>
-                    <div class="text-muted small">@result.Subtitle</div>
-                </li>
-            }
-        </ul>
-    }
+<div style="position: relative;">
+    <RadzenAutoComplete TValue="string" Placeholder="Search by show name, venue, or deal..."
+                        Data="searchResults" TextProperty="DisplayText"
+                        Value="@query" ValueChanged="OnQueryChanged"
+                        Change="OnItemSelected"
+                        MinLength="2" Style="width: 100%;">
+        <Template Context="result">
+            <div>
+                <strong>@result.DisplayText</strong>
+                <div style="font-size: 0.8em; opacity: 0.7;">@result.Subtitle</div>
+            </div>
+        </Template>
+    </RadzenAutoComplete>
 </div>
 
 @code {
     private string query = string.Empty;
     private List<ShowSearchResult> searchResults = new();
 
-    private void SelectShow(int showId)
+    private void OnQueryChanged(string value)
     {
-        query = string.Empty;
-        searchResults.Clear();
-        Navigation.NavigateTo($"/edit-show/{showId}");
+        query = value ?? string.Empty;
+        UpdateSearchResults();
     }
 
-    private void OnQueryChanged(ChangeEventArgs args)
+    private void OnItemSelected(object value)
     {
-        query = args?.Value?.ToString() ?? string.Empty;
-        UpdateSearchResults();
+        var strVal = value?.ToString();
+        var match = searchResults.FirstOrDefault(r => r.DisplayText == strVal);
+        if (match != null)
+        {
+            query = string.Empty;
+            searchResults.Clear();
+            Navigation.NavigateTo($"/edit-show/{match.ShowId}");
+        }
     }
 
     private void UpdateSearchResults()
